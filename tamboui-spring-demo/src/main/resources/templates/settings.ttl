@@ -1,0 +1,42 @@
+<t:dock xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+        top-height="3" bottom-height="3">
+
+  <t:panel region="top" title="Settings" class="border-rounded text-cyan">
+    <t:text t:text="Configure your preferences" class="text-yellow" />
+  </t:panel>
+
+  <t:column region="center" spacing="1">
+
+    <t:panel title="User Settings" class="border-rounded">
+      <t:form bind="settingsForm">
+        <t:column spacing="1">
+          <t:row spacing="2">
+            <t:text t:text="Username:" class="bold" />
+            <t:input field="username" placeholder="Enter username" />
+          </t:row>
+          <t:row spacing="2">
+            <t:text t:text="Email:" class="bold" />
+            <t:input field="email" placeholder="Enter email" />
+          </t:row>
+          <t:text t:text="Press [Enter] to save" class="dim" />
+        </t:column>
+      </t:form>
+    </t:panel>
+
+    <t:if test="${hasSavedMessage}">
+      <t:panel title="Status" class="border-rounded text-green">
+        <t:text t:text="${savedMessage}" class="bold" />
+      </t:panel>
+    </t:if>
+
+    <t:panel title="App Info" class="border-rounded text-blue">
+      <t:text t:text="Version: ${appVersion}  |  Backend: ${backend}  |  Saves: ${saveCount}" />
+    </t:panel>
+
+  </t:column>
+
+  <t:panel region="bottom" class="border-rounded">
+    <t:text t:text="[1] Dashboard  [2] Users  [3] Settings  [Enter] Save  [q] Quit" class="text-cyan" />
+  </t:panel>
+
+</t:dock>

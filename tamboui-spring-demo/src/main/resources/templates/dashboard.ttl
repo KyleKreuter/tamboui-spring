@@ -1,3 +1,38 @@
-<t:panel title="${title}" class="border-rounded p-1 text-cyan">
-  <t:text t:text="Status: ${status}" class="text-green" />
-</t:panel>
+<t:dock xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+        top-height="3" bottom-height="3" left-width="20">
+
+  <t:panel region="top" title="${title}" class="border-rounded text-cyan">
+    <t:text t:text="Status: ${status}  |  ${currentTime}" class="text-green bold" />
+  </t:panel>
+
+  <t:panel region="left" title="Navigation" class="border-rounded text-yellow">
+    <t:list>
+      <t:each items="${navItems}" var="nav">
+        <t:item t:text="${nav}" />
+      </t:each>
+    </t:list>
+  </t:panel>
+
+  <t:grid region="center" grid-columns="2" grid-rows="3" gutter="1">
+    <t:panel title="Users" class="border-rounded text-yellow">
+      <t:text t:text="${userCount}" class="bold" />
+    </t:panel>
+    <t:panel title="Tasks" class="border-rounded text-magenta">
+      <t:text t:text="${taskCount}" class="bold" />
+    </t:panel>
+    <t:panel title="Uptime" class="border-rounded text-green">
+      <t:text t:text="${uptime}" class="bold" />
+    </t:panel>
+    <t:panel title="Version" class="border-rounded text-blue">
+      <t:text t:text="${version}" class="bold" />
+    </t:panel>
+        <t:panel title="Refreshes" class="border-rounded text-blue">
+          <t:text t:text="${refreshes}" class="bold" />
+    </t:panel>
+  </t:grid>
+
+  <t:panel region="bottom" class="border-rounded">
+    <t:text t:text="[1] Dashboard  [2] Users  [3] Settings  [q] Quit" class="text-cyan" />
+  </t:panel>
+
+</t:dock>
