@@ -9,14 +9,25 @@ Spring Boot integration for [TamboUI](https://github.com/tamboui/tamboui) — bu
 
 ## Quick Start
 
-Add the starter to your `pom.xml`:
+Add the Sonatype Snapshots repository and the starter to your `pom.xml`:
 
 ```xml
-<dependency>
-    <groupId>io.github.kylekreuter</groupId>
-    <artifactId>tamboui-spring-boot-starter</artifactId>
-    <version>0.1.0</version>
-</dependency>
+<repositories>
+    <repository>
+        <id>sonatype-snapshots</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        <snapshots><enabled>true</enabled></snapshots>
+        <releases><enabled>false</enabled></releases>
+    </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>io.github.kylekreuter</groupId>
+        <artifactId>tamboui-spring-boot-starter</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+</dependencies>
 ```
 
 Create a screen controller:
