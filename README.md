@@ -265,11 +265,9 @@ public class ProfileController implements ScreenController {
 
 ```properties
 # application.properties
-tamboui.backend=jline3                              # terminal backend
 tamboui.template-prefix=templates/                  # template location
 tamboui.template-suffix=.ttl                        # template file extension
 tamboui.default-screen=dashboard                    # initial screen (optional)
-tamboui.utility-css=META-INF/tamboui-spring/utility.tcss  # utility stylesheet
 ```
 
 ## Modules
