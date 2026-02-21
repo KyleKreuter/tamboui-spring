@@ -1,0 +1,3 @@
+[submodule "libs/tamboui"]
+	path = libs/tamboui
+	url = https://github.com/KyleKreuter/tamboui.git
