@@ -1,0 +1,5 @@
+<t:panel title="Outer">
+  <t:panel title="Inner">
+    <t:text t:text="Deep" />
+  </t:panel>
+</t:panel>

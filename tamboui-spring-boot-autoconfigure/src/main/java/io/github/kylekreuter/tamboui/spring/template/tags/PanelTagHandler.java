@@ -1,28 +1,26 @@
 package io.github.kylekreuter.tamboui.spring.template.tags;
 
-import dev.tamboui.layout.Direction;
-import dev.tamboui.toolkit.elements.Panel;
-import dev.tamboui.widgets.block.BorderType;
-import io.github.kylekreuter.tamboui.spring.template.TagHandler;
+import io.github.kylekreuter.tamboui.spring.template.ParentTagHandler;
 
-import java.util.Locale;
+import dev.tamboui.widgets.block.Block;
+import dev.tamboui.widgets.block.BorderType;
+import dev.tamboui.widgets.block.Borders;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Tag handler for {@code <t:panel>}.
- * Creates a TamboUI {@link Panel} element with title, border, and layout attributes.
+ * Creates a TamboUI {@link Block} widget with a title and border.
  * <p>
  * Supported attributes:
  * <ul>
- *   <li>{@code title} — the panel title text</li>
- *   <li>{@code border-style} or {@code border-type} — border style:
- *       plain, rounded, double, thick, none</li>
- *   <li>{@code direction} — layout direction: vertical/column or horizontal/row</li>
- *   <li>{@code padding} — uniform padding value (integer)</li>
- *   <li>{@code spacing} — gap between children (integer)</li>
+ *   <li>{@code title} - Panel title text</li>
+ *   <li>{@code borderType} or {@code border-style} or {@code border-type} - Border style (PLAIN, ROUNDED, DOUBLE, THICK, NONE)</li>
  * </ul>
  */
-public class PanelTagHandler implements TagHandler {
+public class PanelTagHandler implements ParentTagHandler {
 
     @Override
     public String getTagName() {
@@ -31,64 +29,59 @@ public class PanelTagHandler implements TagHandler {
 
     @Override
     public Object createElement(Map<String, String> attributes) {
-        Panel panel = new Panel();
+        Block.Builder builder = Block.builder()
+                .borders(Borders.ALL);
 
         String title = attributes.get("title");
         if (title != null) {
-            panel.title(title);
+            builder.title(title);
         }
 
-        String borderStyle = attributes.getOrDefault("border-style", attributes.get("border-type"));
-        if (borderStyle != null) {
-            panel.borderType(parseBorderType(borderStyle));
+        String borderTypeAttr = attributes.get("borderType");
+        if (borderTypeAttr == null) {
+            borderTypeAttr = attributes.get("border-style");
         }
-
-        String direction = attributes.get("direction");
-        if (direction != null) {
-            panel.direction(parseDirection(direction));
+        if (borderTypeAttr == null) {
+            borderTypeAttr = attributes.get("border-type");
         }
-
-        String padding = attributes.get("padding");
-        if (padding != null) {
+        if (borderTypeAttr != null) {
             try {
-                panel.padding(Integer.parseInt(padding.trim()));
-            } catch (NumberFormatException ignored) {
-                // Invalid padding value — use default
+                BorderType type = BorderType.valueOf(borderTypeAttr.toUpperCase());
+                builder.borderType(type);
+            } catch (IllegalArgumentException ignored) {
+                // Fall back to default border type
             }
         }
 
-        String spacing = attributes.get("spacing");
-        if (spacing != null) {
-            try {
-                panel.spacing(Integer.parseInt(spacing.trim()));
-            } catch (NumberFormatException ignored) {
-                // Invalid spacing value — use default
-            }
+        return new PanelWidget(builder.build());
+    }
+
+    @Override
+    public void addChildren(Object parent, List<Object> children) {
+        if (parent instanceof PanelWidget panelWidget) {
+            panelWidget.children().addAll(children);
+        }
+    }
+
+    /**
+     * Wrapper that associates a {@link Block} with its child widgets.
+     * The TamboUI Block itself is a container decorator, so we need a holder
+     * to carry both the block and its child widgets through the rendering pipeline.
+     */
+    public static final class PanelWidget {
+        private final Block block;
+        private final List<Object> children = new ArrayList<>();
+
+        public PanelWidget(Block block) {
+            this.block = block;
         }
 
-        return panel;
-    }
+        public Block block() {
+            return block;
+        }
 
-    /**
-     * Parses the border-style attribute string to a TamboUI {@link BorderType} enum value.
-     */
-    static BorderType parseBorderType(String value) {
-        return switch (value.toLowerCase(Locale.ROOT)) {
-            case "rounded" -> BorderType.ROUNDED;
-            case "double" -> BorderType.DOUBLE;
-            case "thick" -> BorderType.THICK;
-            case "none" -> BorderType.NONE;
-            default -> BorderType.PLAIN;
-        };
-    }
-
-    /**
-     * Parses the direction attribute string to a TamboUI {@link Direction} enum value.
-     */
-    static Direction parseDirection(String value) {
-        return switch (value.toLowerCase(Locale.ROOT)) {
-            case "horizontal", "row" -> Direction.HORIZONTAL;
-            default -> Direction.VERTICAL;
-        };
+        public List<Object> children() {
+            return children;
+        }
     }
 }
