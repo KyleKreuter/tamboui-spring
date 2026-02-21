@@ -1,0 +1,3 @@
+<t:panel title="A">
+  <t:include template="include-recursive-b" />
+</t:panel>

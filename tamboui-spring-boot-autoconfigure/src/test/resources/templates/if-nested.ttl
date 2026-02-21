@@ -1,0 +1,7 @@
+<t:panel title="Nested">
+  <t:if test="${['outer']}">
+    <t:if test="${['inner']}">
+      <t:text t:text="Both true" />
+    </t:if>
+  </t:if>
+</t:panel>

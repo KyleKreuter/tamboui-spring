@@ -1,0 +1,5 @@
+<t:panel title="Conditional">
+  <t:if test="${['visible']}">
+    <t:text t:text="Visible" />
+  </t:if>
+</t:panel>
