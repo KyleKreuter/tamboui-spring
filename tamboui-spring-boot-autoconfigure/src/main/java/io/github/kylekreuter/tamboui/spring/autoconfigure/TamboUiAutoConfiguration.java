@@ -1,7 +1,10 @@
 package io.github.kylekreuter.tamboui.spring.autoconfigure;
 
+import dev.tamboui.toolkit.app.ToolkitRunner;
+
 import io.github.kylekreuter.tamboui.spring.core.NavigationRouter;
 import io.github.kylekreuter.tamboui.spring.core.TamboSpringApp;
+import io.github.kylekreuter.tamboui.spring.core.ToolkitRunnerFactory;
 import io.github.kylekreuter.tamboui.spring.template.TagHandler;
 import io.github.kylekreuter.tamboui.spring.template.TemplateCache;
 import io.github.kylekreuter.tamboui.spring.template.TemplateEngine;
@@ -58,9 +61,20 @@ public class TamboUiAutoConfiguration {
         return new NavigationRouter();
     }
 
+    /**
+     * Default factory that creates a {@link ToolkitRunner} with default configuration.
+     * <p>
+     * Users can override this bean to provide custom TuiConfig or builder settings.
+     */
     @Bean
     @ConditionalOnMissingBean
-    public TamboSpringApp tamboSpringApp() {
-        return new TamboSpringApp();
+    public ToolkitRunnerFactory toolkitRunnerFactory() {
+        return ToolkitRunner::create;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public TamboSpringApp tamboSpringApp(ToolkitRunnerFactory toolkitRunnerFactory) {
+        return new TamboSpringApp(toolkitRunnerFactory);
     }
 }
