@@ -7,7 +7,6 @@ import io.github.kylekreuter.tamboui.spring.annotation.TamboScreen;
 import io.github.kylekreuter.tamboui.spring.core.NavigationRouter;
 import io.github.kylekreuter.tamboui.spring.core.ScreenController;
 import io.github.kylekreuter.tamboui.spring.core.TemplateModel;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,6 @@ import java.time.format.DateTimeFormatter;
 
 @TamboScreen(value = "settings", template = "settings")
 public class SettingsController implements ScreenController {
-
     private static final Logger log = LoggerFactory.getLogger(SettingsController.class);
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
@@ -37,12 +35,12 @@ public class SettingsController implements ScreenController {
     @Override
     public void populate(TemplateModel model) {
         model.put("savedMessage", savedMessage)
-             .put("hasSavedMessage", !savedMessage.isEmpty())
-             .put("lastSaveTime", lastSaveTime)
-             .put("saveCount", String.valueOf(saveCount))
-             .put("appVersion", "0.1.0")
-             .put("backend", "jline3")
-             .bindState("settingsForm", settingsForm);
+            .put("hasSavedMessage", !savedMessage.isEmpty())
+            .put("lastSaveTime", lastSaveTime)
+            .put("saveCount", String.valueOf(saveCount))
+            .put("appVersion", "0.1.0")
+            .put("backend", "jline3")
+            .bindState("settingsForm", settingsForm);
     }
 
     @OnSubmit("settingsForm")
@@ -69,5 +67,4 @@ public class SettingsController implements ScreenController {
     void goToSettings() {
         router.navigateTo("settings");
     }
-
 }
