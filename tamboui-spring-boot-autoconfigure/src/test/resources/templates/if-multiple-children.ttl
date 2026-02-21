@@ -1,0 +1,6 @@
+<t:panel title="MultiChild">
+  <t:if test="${['show']}">
+    <t:text t:text="First" />
+    <t:text t:text="Second" />
+  </t:if>
+</t:panel>

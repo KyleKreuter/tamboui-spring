@@ -1,0 +1,5 @@
+<t:panel title="List">
+  <t:each items="${['items']}" var="item">
+    <t:text t:text="${['item']}" />
+  </t:each>
+</t:panel>
