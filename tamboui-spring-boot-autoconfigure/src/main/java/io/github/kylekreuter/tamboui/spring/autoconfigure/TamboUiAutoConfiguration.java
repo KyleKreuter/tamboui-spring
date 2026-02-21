@@ -128,7 +128,7 @@ public class TamboUiAutoConfiguration {
 
     /**
      * Configures TamboUI styling by loading the utility CSS into the
-     * {@link dev.tamboui.css.StyleEngine} when the ToolkitRunner becomes ready.
+     * {@link dev.tamboui.css.engine.StyleEngine} when the ToolkitRunner becomes ready.
      */
     @Bean
     @ConditionalOnMissingBean
