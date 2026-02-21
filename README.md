@@ -7,13 +7,7 @@ Spring Boot integration for [TamboUI](https://github.com/tamboui/tamboui) — bu
 
 > **Pre-release** — API subject to change.
 
-## Build
-
-```bash
-mvn clean install
-```
-
-## Usage
+## Quick Start
 
 Add the starter to your `pom.xml`:
 
@@ -54,6 +48,21 @@ Create a template (`src/main/resources/templates/dashboard.ttl`):
 | `tamboui-spring-boot-starter` | Starter POM with default dependencies |
 | `tamboui-spring-demo` | Demo application |
 
+## Prerequisites
+
+- Java 25+
+- Maven 3.8+
+
+## Building
+
+```bash
+mvn clean install
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
 ## License
 
-TBD
+MIT License — see [LICENSE](LICENSE) for details.
