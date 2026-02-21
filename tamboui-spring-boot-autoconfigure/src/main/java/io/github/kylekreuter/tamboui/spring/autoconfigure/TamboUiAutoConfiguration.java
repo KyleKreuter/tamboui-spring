@@ -9,7 +9,11 @@ import io.github.kylekreuter.tamboui.spring.core.ToolkitRunnerFactory;
 import io.github.kylekreuter.tamboui.spring.template.TagHandler;
 import io.github.kylekreuter.tamboui.spring.template.TemplateCache;
 import io.github.kylekreuter.tamboui.spring.template.TemplateEngine;
+import io.github.kylekreuter.tamboui.spring.template.tags.ColTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.ItemTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.ListTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.TableTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TextTagHandler;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -46,6 +50,30 @@ public class TamboUiAutoConfiguration {
     @ConditionalOnMissingBean
     public TextTagHandler textTagHandler() {
         return new TextTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ListTagHandler listTagHandler() {
+        return new ListTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ItemTagHandler itemTagHandler() {
+        return new ItemTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public TableTagHandler tableTagHandler() {
+        return new TableTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ColTagHandler colTagHandler() {
+        return new ColTagHandler();
     }
 
     @Bean
