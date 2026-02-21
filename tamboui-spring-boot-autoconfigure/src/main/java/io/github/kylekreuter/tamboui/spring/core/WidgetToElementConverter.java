@@ -460,6 +460,13 @@ public class WidgetToElementConverter {
                 ? Toolkit.textInput(inputState)
                 : Toolkit.textInput();
 
+        // Assign stable ID so FocusManager can track focus across frames
+        if (field != null) {
+            element.id("input-" + field);
+        } else if (inputWidget.bind() != null) {
+            element.id("input-" + inputWidget.bind());
+        }
+
         String placeholder = inputWidget.placeholder();
         if (placeholder != null) {
             element.placeholder(placeholder);
