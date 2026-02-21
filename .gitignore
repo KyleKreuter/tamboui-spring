@@ -48,5 +48,10 @@ AGENTS.md
 # Local notes
 todo/
 docs/
+
+# Local development files
+.java-version
+.orchestrator-project-id
+
 # Worktrees
 .teams/
