@@ -44,80 +44,88 @@ class ColumnTagHandlerTest {
     class CreateElement {
 
         @Test
-        @DisplayName("creates Column with no attributes")
+        @DisplayName("creates ColumnWidget with no attributes")
         void withNoAttributes() {
             Object result = handler.createElement(Map.of());
 
-            assertThat(result).isInstanceOf(Column.class);
+            assertThat(result).isInstanceOf(ColumnTagHandler.ColumnWidget.class);
             assertThat(result).isNotNull();
         }
 
         @Test
-        @DisplayName("creates Column with spacing attribute")
+        @DisplayName("creates ColumnWidget with spacing attribute")
         void withSpacing() {
             Map<String, String> attrs = Map.of("spacing", "2");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Column.class);
+            assertThat(result).isInstanceOf(ColumnTagHandler.ColumnWidget.class);
+            var widget = (ColumnTagHandler.ColumnWidget) result;
+            assertThat(widget.spacing()).isEqualTo("2");
         }
 
         @Test
-        @DisplayName("creates Column with flex attribute")
+        @DisplayName("creates ColumnWidget with flex attribute")
         void withFlex() {
             Map<String, String> attrs = Map.of("flex", "CENTER");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Column.class);
+            assertThat(result).isInstanceOf(ColumnTagHandler.ColumnWidget.class);
+            var widget = (ColumnTagHandler.ColumnWidget) result;
+            assertThat(widget.flex()).isEqualTo("CENTER");
         }
 
         @Test
-        @DisplayName("creates Column with lowercase flex attribute")
+        @DisplayName("creates ColumnWidget with lowercase flex attribute")
         void withLowercaseFlex() {
             Map<String, String> attrs = Map.of("flex", "space_evenly");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Column.class);
+            assertThat(result).isInstanceOf(ColumnTagHandler.ColumnWidget.class);
+            var widget = (ColumnTagHandler.ColumnWidget) result;
+            assertThat(widget.flex()).isEqualTo("space_evenly");
         }
 
         @Test
-        @DisplayName("creates Column with margin attribute")
+        @DisplayName("creates ColumnWidget with margin attribute")
         void withMargin() {
             Map<String, String> attrs = Map.of("margin", "1");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Column.class);
+            assertThat(result).isInstanceOf(ColumnTagHandler.ColumnWidget.class);
+            var widget = (ColumnTagHandler.ColumnWidget) result;
+            assertThat(widget.margin()).isEqualTo("1");
         }
 
         @Test
-        @DisplayName("creates Column with id attribute")
+        @DisplayName("creates ColumnWidget with id attribute")
         void withId() {
             Map<String, String> attrs = Map.of("id", "my-column");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Column.class);
-            Column column = (Column) result;
-            assertThat(column.id()).isEqualTo("my-column");
+            assertThat(result).isInstanceOf(ColumnTagHandler.ColumnWidget.class);
+            var widget = (ColumnTagHandler.ColumnWidget) result;
+            assertThat(widget.id()).isEqualTo("my-column");
         }
 
         @Test
-        @DisplayName("creates Column with class attribute")
+        @DisplayName("creates ColumnWidget with class attribute")
         void withCssClass() {
             Map<String, String> attrs = Map.of("class", "text-cyan p-2");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Column.class);
-            Column column = (Column) result;
-            assertThat(column.cssClasses()).contains("text-cyan", "p-2");
+            assertThat(result).isInstanceOf(ColumnTagHandler.ColumnWidget.class);
+            var widget = (ColumnTagHandler.ColumnWidget) result;
+            assertThat(widget.cssClass()).isEqualTo("text-cyan p-2");
         }
 
         @Test
-        @DisplayName("creates Column with all supported attributes")
+        @DisplayName("creates ColumnWidget with all supported attributes")
         void withAllAttributes() {
             Map<String, String> attrs = new HashMap<>();
             attrs.put("spacing", "1");
@@ -128,40 +136,49 @@ class ColumnTagHandlerTest {
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Column.class);
-            Column column = (Column) result;
-            assertThat(column.id()).isEqualTo("main-col");
-            assertThat(column.cssClasses()).contains("bg-blue", "bold");
+            assertThat(result).isInstanceOf(ColumnTagHandler.ColumnWidget.class);
+            var widget = (ColumnTagHandler.ColumnWidget) result;
+            assertThat(widget.spacing()).isEqualTo("1");
+            assertThat(widget.flex()).isEqualTo("SPACE_AROUND");
+            assertThat(widget.margin()).isEqualTo("3");
+            assertThat(widget.id()).isEqualTo("main-col");
+            assertThat(widget.cssClass()).isEqualTo("bg-blue bold");
         }
 
         @Test
-        @DisplayName("ignores invalid spacing value gracefully")
+        @DisplayName("stores invalid spacing value as-is (validated during conversion)")
         void invalidSpacing() {
             Map<String, String> attrs = Map.of("spacing", "not-a-number");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Column.class);
+            assertThat(result).isInstanceOf(ColumnTagHandler.ColumnWidget.class);
+            var widget = (ColumnTagHandler.ColumnWidget) result;
+            assertThat(widget.spacing()).isEqualTo("not-a-number");
         }
 
         @Test
-        @DisplayName("ignores invalid flex value gracefully")
+        @DisplayName("stores invalid flex value as-is (validated during conversion)")
         void invalidFlex() {
             Map<String, String> attrs = Map.of("flex", "invalid_flex");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Column.class);
+            assertThat(result).isInstanceOf(ColumnTagHandler.ColumnWidget.class);
+            var widget = (ColumnTagHandler.ColumnWidget) result;
+            assertThat(widget.flex()).isEqualTo("invalid_flex");
         }
 
         @Test
-        @DisplayName("ignores invalid margin value gracefully")
+        @DisplayName("stores invalid margin value as-is (validated during conversion)")
         void invalidMargin() {
             Map<String, String> attrs = Map.of("margin", "xyz");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Column.class);
+            assertThat(result).isInstanceOf(ColumnTagHandler.ColumnWidget.class);
+            var widget = (ColumnTagHandler.ColumnWidget) result;
+            assertThat(widget.margin()).isEqualTo("xyz");
         }
 
         @Test
@@ -177,52 +194,54 @@ class ColumnTagHandlerTest {
     class AddChildren {
 
         @Test
-        @DisplayName("should add Element children to Column")
+        @DisplayName("should add children to ColumnWidget")
         void addElementChildren() {
-            Column parent = (Column) handler.createElement(Map.of());
+            var parent = (ColumnTagHandler.ColumnWidget) handler.createElement(Map.of());
             Column child1 = new Column();
             Column child2 = new Column();
 
             handler.addChildren(parent, List.of(child1, child2));
 
-            assertThat(parent).isInstanceOf(Column.class);
+            assertThat(parent.children()).containsExactly(child1, child2);
         }
 
         @Test
         @DisplayName("should handle empty children list")
         void emptyChildren() {
-            Column parent = (Column) handler.createElement(Map.of());
+            var parent = (ColumnTagHandler.ColumnWidget) handler.createElement(Map.of());
 
             handler.addChildren(parent, List.of());
 
-            assertThat(parent).isInstanceOf(Column.class);
+            assertThat(parent.children()).isEmpty();
         }
 
         @Test
-        @DisplayName("should ignore non-Column parent")
+        @DisplayName("should ignore non-ColumnWidget parent")
         void nonColumnParent() {
-            // Should not throw when parent is not a Column
+            // Should not throw when parent is not a ColumnWidget
             handler.addChildren("not a column", List.of(new Column()));
         }
 
         @Test
-        @DisplayName("should skip non-Element children")
+        @DisplayName("should accept non-Element children (converted later)")
         void nonElementChildren() {
-            Column parent = (Column) handler.createElement(Map.of());
+            var parent = (ColumnTagHandler.ColumnWidget) handler.createElement(Map.of());
 
-            // Should not throw when children contain non-Element objects
             handler.addChildren(parent, List.of("not an element", 42));
+
+            assertThat(parent.children()).hasSize(2);
         }
 
         @Test
-        @DisplayName("should add only Element children, skipping non-Element objects")
+        @DisplayName("should add all children including non-Element objects")
         void mixedChildren() {
-            Column parent = (Column) handler.createElement(Map.of());
+            var parent = (ColumnTagHandler.ColumnWidget) handler.createElement(Map.of());
             Column validChild = new Column();
 
             handler.addChildren(parent, List.of(validChild, "not an element"));
 
-            assertThat(parent).isInstanceOf(Column.class);
+            assertThat(parent.children()).hasSize(2);
+            assertThat(parent.children()).first().isEqualTo(validChild);
         }
     }
 }

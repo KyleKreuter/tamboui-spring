@@ -175,6 +175,16 @@ public class NavigationRouter {
     }
 
     /**
+     * Return the template name registered under the given screen name.
+     *
+     * @param screenName the screen name
+     * @return the template name, or {@code null} if not found
+     */
+    public String getTemplateName(String screenName) {
+        return screenTemplates.get(screenName);
+    }
+
+    /**
      * Check whether a screen with the given name is registered.
      *
      * @param screenName the screen name to check

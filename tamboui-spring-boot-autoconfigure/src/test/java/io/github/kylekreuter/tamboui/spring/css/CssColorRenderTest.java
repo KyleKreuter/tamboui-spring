@@ -66,9 +66,9 @@ class CssColorRenderTest {
     }
 
     @Test
-    void panelWithTextCyan_shouldRenderBorderWithCyanColor() {
+    void panelWithBorderCyan_shouldRenderBorderWithCyanColor() {
         Panel panel = Toolkit.panel("Test");
-        panel.addClass("text-cyan", "border-rounded");
+        panel.addClass("border-cyan", "border-rounded");
 
         panel.render(frame, new Rect(0, 0, 20, 5), context);
 

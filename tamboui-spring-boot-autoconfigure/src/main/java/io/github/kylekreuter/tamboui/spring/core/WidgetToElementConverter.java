@@ -1,22 +1,27 @@
 package io.github.kylekreuter.tamboui.spring.core;
 
 import dev.tamboui.layout.Constraint;
+import dev.tamboui.layout.Flex;
 import dev.tamboui.toolkit.Toolkit;
 import dev.tamboui.toolkit.element.Element;
+import dev.tamboui.toolkit.elements.Column;
 import dev.tamboui.toolkit.elements.DockElement;
 import dev.tamboui.toolkit.elements.GridElement;
+import dev.tamboui.toolkit.elements.Row;
 import dev.tamboui.toolkit.elements.TextInputElement;
 import dev.tamboui.widget.Widget;
 import dev.tamboui.widgets.form.FormState;
 import dev.tamboui.widgets.input.TextInputState;
 import dev.tamboui.widgets.list.ListItem;
 
+import io.github.kylekreuter.tamboui.spring.template.tags.ColumnTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.DockTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.FormTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.GridTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.InputTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.ListTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.RowTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TableTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TextTagHandler;
 
@@ -33,10 +38,9 @@ import java.util.Map;
  * io.github.kylekreuter.tamboui.spring.template.TemplateEngine TemplateEngine}
  * into a TamboUI {@link Element} tree that can be rendered by the toolkit.
  * <p>
- * Some {@link io.github.kylekreuter.tamboui.spring.template.TagHandler TagHandler}
- * implementations already produce toolkit Elements directly (Row, Column, Spacer).
- * Others produce intermediate wrapper objects (PanelWidget, DockWidget, etc.) that
- * need to be converted to their corresponding toolkit Elements.
+ * All {@link io.github.kylekreuter.tamboui.spring.template.TagHandler TagHandler}
+ * implementations produce intermediate wrapper objects that this converter transforms
+ * into toolkit Elements. Only simple elements like Spacer may pass through directly.
  * <p>
  * When state bindings are provided via {@link #convert(Object, Map)}, the converter
  * connects {@code <t:input>} elements to their backing {@link TextInputState} from
@@ -93,9 +97,19 @@ public class WidgetToElementConverter {
             return Toolkit.text("");
         }
 
-        // Already an Element (Row, Column, Spacer, etc.)
+        // Already an Element (Spacer, etc.)
         if (widget instanceof Element element) {
             return element;
+        }
+
+        // Row wrapper → Row element
+        if (widget instanceof RowTagHandler.RowWidget rowWidget) {
+            return convertRow(rowWidget, stateBindings, currentForm);
+        }
+
+        // Column wrapper → Column element
+        if (widget instanceof ColumnTagHandler.ColumnWidget columnWidget) {
+            return convertColumn(columnWidget, stateBindings, currentForm);
         }
 
         // Panel wrapper → Panel element
@@ -157,8 +171,6 @@ public class WidgetToElementConverter {
         if (cssClass != null && !cssClass.isBlank()) {
             String[] classes = cssClass.trim().split("\\s+");
             panel.addClass(classes);
-            log.info("DIAG convertPanel: title='{}', cssClass='{}', parsed={}, panel.cssClasses={}",
-                     title, cssClass, java.util.Arrays.asList(classes), panel.cssClasses());
         }
 
         for (Object child : panelWidget.children()) {
@@ -166,6 +178,58 @@ public class WidgetToElementConverter {
         }
 
         return panel;
+    }
+
+    private Element convertRow(RowTagHandler.RowWidget rowWidget,
+                                Map<String, Object> stateBindings, FormState currentForm) {
+        Row row = Toolkit.row();
+        applyRowAttributes(row, rowWidget.spacing(), rowWidget.flex(),
+                           rowWidget.margin(), rowWidget.id(), rowWidget.cssClass());
+        for (Object child : rowWidget.children()) {
+            row.add(doConvert(child, stateBindings, currentForm));
+        }
+        return row;
+    }
+
+    private Element convertColumn(ColumnTagHandler.ColumnWidget columnWidget,
+                                   Map<String, Object> stateBindings, FormState currentForm) {
+        Column column = Toolkit.column();
+        applyColumnAttributes(column, columnWidget.spacing(), columnWidget.flex(),
+                              columnWidget.margin(), columnWidget.id(), columnWidget.cssClass());
+        for (Object child : columnWidget.children()) {
+            column.add(doConvert(child, stateBindings, currentForm));
+        }
+        return column;
+    }
+
+    private void applyRowAttributes(Row row, String spacing, String flex,
+                                     String margin, String id, String cssClass) {
+        if (spacing != null) {
+            try { row.spacing(Integer.parseInt(spacing.trim())); } catch (NumberFormatException ignored) {}
+        }
+        if (flex != null) {
+            try { row.flex(Flex.valueOf(flex.trim().toUpperCase())); } catch (IllegalArgumentException ignored) {}
+        }
+        if (margin != null) {
+            try { row.margin(Integer.parseInt(margin.trim())); } catch (NumberFormatException ignored) {}
+        }
+        if (id != null && !id.isBlank()) { row.id(id.trim()); }
+        if (cssClass != null && !cssClass.isBlank()) { row.addClass(cssClass.trim().split("\\s+")); }
+    }
+
+    private void applyColumnAttributes(Column column, String spacing, String flex,
+                                        String margin, String id, String cssClass) {
+        if (spacing != null) {
+            try { column.spacing(Integer.parseInt(spacing.trim())); } catch (NumberFormatException ignored) {}
+        }
+        if (flex != null) {
+            try { column.flex(Flex.valueOf(flex.trim().toUpperCase())); } catch (IllegalArgumentException ignored) {}
+        }
+        if (margin != null) {
+            try { column.margin(Integer.parseInt(margin.trim())); } catch (NumberFormatException ignored) {}
+        }
+        if (id != null && !id.isBlank()) { column.id(id.trim()); }
+        if (cssClass != null && !cssClass.isBlank()) { column.addClass(cssClass.trim().split("\\s+")); }
     }
 
     private Element convertDock(DockTagHandler.DockWidget dockWidget,
@@ -280,8 +344,6 @@ public class WidgetToElementConverter {
         if (cssClass != null && !cssClass.isBlank()) {
             String[] classes = cssClass.trim().split("\\s+");
             textElement.addClass(classes);
-            log.info("DIAG convertText: text='{}', cssClass='{}', parsed={}, textElement.cssClasses={}",
-                     textWidget.text(), cssClass, java.util.Arrays.asList(classes), textElement.cssClasses());
         }
         return textElement;
     }

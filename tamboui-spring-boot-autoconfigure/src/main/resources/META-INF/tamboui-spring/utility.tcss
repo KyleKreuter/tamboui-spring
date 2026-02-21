@@ -487,6 +487,75 @@
 }
 
 /* ----------------------------------------------------------------------------
+ * Border Colors: .border-{color}
+ * Note: border-color is separate from color (text foreground) in TamboUI.
+ * ---------------------------------------------------------------------------- */
+
+.border-black {
+    border-color: black;
+}
+
+.border-red {
+    border-color: red;
+}
+
+.border-green {
+    border-color: green;
+}
+
+.border-yellow {
+    border-color: yellow;
+}
+
+.border-blue {
+    border-color: blue;
+}
+
+.border-magenta {
+    border-color: magenta;
+}
+
+.border-cyan {
+    border-color: cyan;
+}
+
+.border-white {
+    border-color: white;
+}
+
+.border-gray {
+    border-color: gray;
+}
+
+.border-dark-gray {
+    border-color: dark-gray;
+}
+
+.border-light-red {
+    border-color: light-red;
+}
+
+.border-light-green {
+    border-color: light-green;
+}
+
+.border-light-yellow {
+    border-color: light-yellow;
+}
+
+.border-light-blue {
+    border-color: light-blue;
+}
+
+.border-light-magenta {
+    border-color: light-magenta;
+}
+
+.border-light-cyan {
+    border-color: light-cyan;
+}
+
+/* ----------------------------------------------------------------------------
  * Text Alignment and Overflow
  * ---------------------------------------------------------------------------- */
 

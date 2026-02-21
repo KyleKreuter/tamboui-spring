@@ -44,80 +44,88 @@ class RowTagHandlerTest {
     class CreateElement {
 
         @Test
-        @DisplayName("creates Row with no attributes")
+        @DisplayName("creates RowWidget with no attributes")
         void withNoAttributes() {
             Object result = handler.createElement(Map.of());
 
-            assertThat(result).isInstanceOf(Row.class);
+            assertThat(result).isInstanceOf(RowTagHandler.RowWidget.class);
             assertThat(result).isNotNull();
         }
 
         @Test
-        @DisplayName("creates Row with spacing attribute")
+        @DisplayName("creates RowWidget with spacing attribute")
         void withSpacing() {
             Map<String, String> attrs = Map.of("spacing", "2");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Row.class);
+            assertThat(result).isInstanceOf(RowTagHandler.RowWidget.class);
+            var widget = (RowTagHandler.RowWidget) result;
+            assertThat(widget.spacing()).isEqualTo("2");
         }
 
         @Test
-        @DisplayName("creates Row with flex attribute")
+        @DisplayName("creates RowWidget with flex attribute")
         void withFlex() {
             Map<String, String> attrs = Map.of("flex", "CENTER");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Row.class);
+            assertThat(result).isInstanceOf(RowTagHandler.RowWidget.class);
+            var widget = (RowTagHandler.RowWidget) result;
+            assertThat(widget.flex()).isEqualTo("CENTER");
         }
 
         @Test
-        @DisplayName("creates Row with lowercase flex attribute")
+        @DisplayName("creates RowWidget with lowercase flex attribute")
         void withLowercaseFlex() {
             Map<String, String> attrs = Map.of("flex", "space_between");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Row.class);
+            assertThat(result).isInstanceOf(RowTagHandler.RowWidget.class);
+            var widget = (RowTagHandler.RowWidget) result;
+            assertThat(widget.flex()).isEqualTo("space_between");
         }
 
         @Test
-        @DisplayName("creates Row with margin attribute")
+        @DisplayName("creates RowWidget with margin attribute")
         void withMargin() {
             Map<String, String> attrs = Map.of("margin", "1");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Row.class);
+            assertThat(result).isInstanceOf(RowTagHandler.RowWidget.class);
+            var widget = (RowTagHandler.RowWidget) result;
+            assertThat(widget.margin()).isEqualTo("1");
         }
 
         @Test
-        @DisplayName("creates Row with id attribute")
+        @DisplayName("creates RowWidget with id attribute")
         void withId() {
             Map<String, String> attrs = Map.of("id", "my-row");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Row.class);
-            Row row = (Row) result;
-            assertThat(row.id()).isEqualTo("my-row");
+            assertThat(result).isInstanceOf(RowTagHandler.RowWidget.class);
+            var widget = (RowTagHandler.RowWidget) result;
+            assertThat(widget.id()).isEqualTo("my-row");
         }
 
         @Test
-        @DisplayName("creates Row with class attribute")
+        @DisplayName("creates RowWidget with class attribute")
         void withCssClass() {
             Map<String, String> attrs = Map.of("class", "border-rounded p-1");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Row.class);
-            Row row = (Row) result;
-            assertThat(row.cssClasses()).contains("border-rounded", "p-1");
+            assertThat(result).isInstanceOf(RowTagHandler.RowWidget.class);
+            var widget = (RowTagHandler.RowWidget) result;
+            assertThat(widget.cssClass()).isEqualTo("border-rounded p-1");
         }
 
         @Test
-        @DisplayName("creates Row with all supported attributes")
+        @DisplayName("creates RowWidget with all supported attributes")
         void withAllAttributes() {
             Map<String, String> attrs = new HashMap<>();
             attrs.put("spacing", "3");
@@ -128,40 +136,49 @@ class RowTagHandlerTest {
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Row.class);
-            Row row = (Row) result;
-            assertThat(row.id()).isEqualTo("test-row");
-            assertThat(row.cssClasses()).contains("highlight");
+            assertThat(result).isInstanceOf(RowTagHandler.RowWidget.class);
+            var widget = (RowTagHandler.RowWidget) result;
+            assertThat(widget.spacing()).isEqualTo("3");
+            assertThat(widget.flex()).isEqualTo("END");
+            assertThat(widget.margin()).isEqualTo("2");
+            assertThat(widget.id()).isEqualTo("test-row");
+            assertThat(widget.cssClass()).isEqualTo("highlight");
         }
 
         @Test
-        @DisplayName("ignores invalid spacing value gracefully")
+        @DisplayName("stores invalid spacing value as-is (validated during conversion)")
         void invalidSpacing() {
             Map<String, String> attrs = Map.of("spacing", "not-a-number");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Row.class);
+            assertThat(result).isInstanceOf(RowTagHandler.RowWidget.class);
+            var widget = (RowTagHandler.RowWidget) result;
+            assertThat(widget.spacing()).isEqualTo("not-a-number");
         }
 
         @Test
-        @DisplayName("ignores invalid flex value gracefully")
+        @DisplayName("stores invalid flex value as-is (validated during conversion)")
         void invalidFlex() {
             Map<String, String> attrs = Map.of("flex", "invalid_flex");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Row.class);
+            assertThat(result).isInstanceOf(RowTagHandler.RowWidget.class);
+            var widget = (RowTagHandler.RowWidget) result;
+            assertThat(widget.flex()).isEqualTo("invalid_flex");
         }
 
         @Test
-        @DisplayName("ignores invalid margin value gracefully")
+        @DisplayName("stores invalid margin value as-is (validated during conversion)")
         void invalidMargin() {
             Map<String, String> attrs = Map.of("margin", "abc");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Row.class);
+            assertThat(result).isInstanceOf(RowTagHandler.RowWidget.class);
+            var widget = (RowTagHandler.RowWidget) result;
+            assertThat(widget.margin()).isEqualTo("abc");
         }
 
         @Test
@@ -177,54 +194,54 @@ class RowTagHandlerTest {
     class AddChildren {
 
         @Test
-        @DisplayName("should add Element children to Row")
+        @DisplayName("should add children to RowWidget")
         void addElementChildren() {
-            Row parent = (Row) handler.createElement(Map.of());
+            var parent = (RowTagHandler.RowWidget) handler.createElement(Map.of());
             Row child1 = new Row();
             Row child2 = new Row();
 
             handler.addChildren(parent, List.of(child1, child2));
 
-            // Row extends ContainerElement which has protected children field
-            // We verify indirectly that the row accepted children by checking it's still a valid Row
-            assertThat(parent).isInstanceOf(Row.class);
+            assertThat(parent.children()).containsExactly(child1, child2);
         }
 
         @Test
         @DisplayName("should handle empty children list")
         void emptyChildren() {
-            Row parent = (Row) handler.createElement(Map.of());
+            var parent = (RowTagHandler.RowWidget) handler.createElement(Map.of());
 
             handler.addChildren(parent, List.of());
 
-            assertThat(parent).isInstanceOf(Row.class);
+            assertThat(parent.children()).isEmpty();
         }
 
         @Test
-        @DisplayName("should ignore non-Row parent")
+        @DisplayName("should ignore non-RowWidget parent")
         void nonRowParent() {
-            // Should not throw when parent is not a Row
+            // Should not throw when parent is not a RowWidget
             handler.addChildren("not a row", List.of(new Row()));
         }
 
         @Test
-        @DisplayName("should skip non-Element children")
+        @DisplayName("should accept non-Element children (converted later)")
         void nonElementChildren() {
-            Row parent = (Row) handler.createElement(Map.of());
+            var parent = (RowTagHandler.RowWidget) handler.createElement(Map.of());
 
-            // Should not throw when children contain non-Element objects
             handler.addChildren(parent, List.of("not an element", 42));
+
+            assertThat(parent.children()).hasSize(2);
         }
 
         @Test
-        @DisplayName("should add only Element children, skipping non-Element objects")
+        @DisplayName("should add all children including non-Element objects")
         void mixedChildren() {
-            Row parent = (Row) handler.createElement(Map.of());
+            var parent = (RowTagHandler.RowWidget) handler.createElement(Map.of());
             Row validChild = new Row();
 
             handler.addChildren(parent, List.of(validChild, "not an element", 42));
 
-            assertThat(parent).isInstanceOf(Row.class);
+            assertThat(parent.children()).hasSize(3);
+            assertThat(parent.children()).first().isEqualTo(validChild);
         }
     }
 }

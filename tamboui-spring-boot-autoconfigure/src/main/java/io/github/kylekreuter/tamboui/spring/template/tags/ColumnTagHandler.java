@@ -1,17 +1,16 @@
 package io.github.kylekreuter.tamboui.spring.template.tags;
 
-import dev.tamboui.layout.Flex;
-import dev.tamboui.layout.Margin;
-import dev.tamboui.toolkit.elements.Column;
-import io.github.kylekreuter.tamboui.spring.core.WidgetToElementConverter;
 import io.github.kylekreuter.tamboui.spring.template.ParentTagHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Tag handler for {@code <t:column>}.
- * Creates a TamboUI {@link Column} element that arranges children vertically.
+ * Creates a {@link ColumnWidget} wrapper that the {@link
+ * io.github.kylekreuter.tamboui.spring.core.WidgetToElementConverter WidgetToElementConverter}
+ * converts into a TamboUI {@link dev.tamboui.toolkit.elements.Column Column} element.
  * <p>
  * Supported attributes:
  * <ul>
@@ -31,56 +30,48 @@ public class ColumnTagHandler implements ParentTagHandler {
 
     @Override
     public Object createElement(Map<String, String> attributes) {
-        Column column = new Column();
-
-        String spacing = attributes.get("spacing");
-        if (spacing != null) {
-            try {
-                column.spacing(Integer.parseInt(spacing.trim()));
-            } catch (NumberFormatException ignored) {
-                // Fall back to default spacing
-            }
-        }
-
-        String flexAttr = attributes.get("flex");
-        if (flexAttr != null) {
-            try {
-                Flex flex = Flex.valueOf(flexAttr.trim().toUpperCase());
-                column.flex(flex);
-            } catch (IllegalArgumentException ignored) {
-                // Fall back to default flex
-            }
-        }
-
-        String marginAttr = attributes.get("margin");
-        if (marginAttr != null) {
-            try {
-                column.margin(Integer.parseInt(marginAttr.trim()));
-            } catch (NumberFormatException ignored) {
-                // Fall back to default margin
-            }
-        }
-
-        String id = attributes.get("id");
-        if (id != null) {
-            column.id(id);
-        }
-
-        String cssClass = attributes.get("class");
-        if (cssClass != null) {
-            column.addClass(cssClass.trim().split("\\s+"));
-        }
-
-        return column;
+        return new ColumnWidget(
+                attributes.get("spacing"),
+                attributes.get("flex"),
+                attributes.get("margin"),
+                attributes.get("id"),
+                attributes.get("class")
+        );
     }
 
     @Override
     public void addChildren(Object parent, List<Object> children) {
-        if (parent instanceof Column column) {
-            WidgetToElementConverter converter = new WidgetToElementConverter();
-            for (Object child : children) {
-                column.add(converter.convert(child));
-            }
+        if (parent instanceof ColumnWidget columnWidget) {
+            columnWidget.children().addAll(children);
         }
+    }
+
+    /**
+     * Intermediate wrapper holding column configuration and children.
+     * Converted to a {@link dev.tamboui.toolkit.elements.Column} by the
+     * {@link io.github.kylekreuter.tamboui.spring.core.WidgetToElementConverter}.
+     */
+    public static final class ColumnWidget {
+        private final String spacing;
+        private final String flex;
+        private final String margin;
+        private final String id;
+        private final String cssClass;
+        private final List<Object> children = new ArrayList<>();
+
+        public ColumnWidget(String spacing, String flex, String margin, String id, String cssClass) {
+            this.spacing = spacing;
+            this.flex = flex;
+            this.margin = margin;
+            this.id = id;
+            this.cssClass = cssClass;
+        }
+
+        public String spacing() { return spacing; }
+        public String flex() { return flex; }
+        public String margin() { return margin; }
+        public String id() { return id; }
+        public String cssClass() { return cssClass; }
+        public List<Object> children() { return children; }
     }
 }

@@ -56,11 +56,11 @@ class CssFullPipelineTest {
     void dockWithCssPanels_shouldApplyColors() {
         // Build element tree like the WidgetToElementConverter does
         Panel topPanel = Toolkit.panel("Dashboard");
-        topPanel.addClass("border-rounded", "text-cyan");
+        topPanel.addClass("border-rounded", "border-cyan");
         topPanel.add(Toolkit.text("Status: Running"));
 
         Panel centerPanel = Toolkit.panel("Content");
-        centerPanel.addClass("border-rounded", "text-green");
+        centerPanel.addClass("border-rounded", "border-green");
         centerPanel.add(Toolkit.text("Hello World"));
 
         DockElement dock = Toolkit.dock();
@@ -97,7 +97,7 @@ class CssFullPipelineTest {
                         .title("Test Panel")
                         .build(),
                 "Test Panel",
-                "border-rounded text-cyan"
+                "border-rounded border-cyan"
         );
 
         // Create a TextWidget like TextTagHandler would

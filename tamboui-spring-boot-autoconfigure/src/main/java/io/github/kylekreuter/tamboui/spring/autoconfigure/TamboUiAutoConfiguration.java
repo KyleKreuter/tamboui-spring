@@ -158,10 +158,15 @@ public class TamboUiAutoConfiguration {
                                           NavigationRouter navigationRouter,
                                           TemplateEngine templateEngine,
                                           WidgetToElementConverter converter) {
-        var log = org.slf4j.LoggerFactory.getLogger("tamboui.diagnostic");
         return new TamboSpringApp(toolkitRunnerFactory, () -> {
-            ScreenController controller = navigationRouter.getActiveController();
-            String templateName = navigationRouter.getActiveTemplateName();
+            // Read activeScreen once to avoid race conditions between
+            // controller and template resolution during screen transitions
+            String screen = navigationRouter.getActiveScreen();
+            if (screen == null) {
+                return dev.tamboui.toolkit.Toolkit.text("No screen active");
+            }
+            ScreenController controller = navigationRouter.getController(screen);
+            String templateName = navigationRouter.getTemplateName(screen);
             if (controller == null || templateName == null) {
                 return dev.tamboui.toolkit.Toolkit.text("No screen active");
             }
