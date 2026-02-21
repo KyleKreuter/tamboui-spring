@@ -4,6 +4,7 @@ import dev.tamboui.toolkit.app.ToolkitRunner;
 
 import io.github.kylekreuter.tamboui.spring.core.NavigationRouter;
 import io.github.kylekreuter.tamboui.spring.core.OnKeyRegistrar;
+import io.github.kylekreuter.tamboui.spring.core.ScreenAutoDiscovery;
 import io.github.kylekreuter.tamboui.spring.core.TamboSpringApp;
 import io.github.kylekreuter.tamboui.spring.core.ToolkitRunnerFactory;
 import io.github.kylekreuter.tamboui.spring.template.TagHandler;
@@ -20,6 +21,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import java.util.List;
@@ -109,7 +111,16 @@ public class TamboUiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public OnKeyRegistrar onKeyRegistrar(TamboSpringApp tamboSpringApp) {
-        return new OnKeyRegistrar(tamboSpringApp);
+    public OnKeyRegistrar onKeyRegistrar(TamboSpringApp tamboSpringApp,
+                                         NavigationRouter navigationRouter) {
+        return new OnKeyRegistrar(tamboSpringApp, navigationRouter);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ScreenAutoDiscovery screenAutoDiscovery(ApplicationContext applicationContext,
+                                                    NavigationRouter navigationRouter,
+                                                    TamboUiProperties properties) {
+        return new ScreenAutoDiscovery(applicationContext, navigationRouter, properties);
     }
 }

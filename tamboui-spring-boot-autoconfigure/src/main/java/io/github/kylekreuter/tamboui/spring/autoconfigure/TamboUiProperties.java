@@ -30,6 +30,12 @@ public class TamboUiProperties {
      */
     private String utilityCss = "META-INF/tamboui-spring/utility.tcss";
 
+    /**
+     * Name of the default screen to navigate to on startup.
+     * If not set, the first discovered {@code @TamboScreen} bean is used.
+     */
+    private String defaultScreen;
+
     public String getBackend() {
         return backend;
     }
@@ -60,5 +66,13 @@ public class TamboUiProperties {
 
     public void setUtilityCss(String utilityCss) {
         this.utilityCss = utilityCss;
+    }
+
+    public String getDefaultScreen() {
+        return defaultScreen;
+    }
+
+    public void setDefaultScreen(String defaultScreen) {
+        this.defaultScreen = defaultScreen;
     }
 }

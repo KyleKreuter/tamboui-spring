@@ -11,6 +11,7 @@ import dev.tamboui.tui.event.Event;
 import dev.tamboui.tui.event.KeyEvent;
 
 import io.github.kylekreuter.tamboui.spring.annotation.OnKey;
+import io.github.kylekreuter.tamboui.spring.annotation.TamboScreen;
 import io.github.kylekreuter.tamboui.spring.core.KeyBindingParser.ParsedBinding;
 
 import org.slf4j.Logger;
@@ -29,6 +30,11 @@ import org.springframework.util.ReflectionUtils;
  * once the {@link TamboSpringApp} has started and a {@link ToolkitRunner}
  * is available.
  * <p>
+ * If a bean is annotated with {@link TamboScreen @TamboScreen}, its key bindings
+ * are scoped to that screen -- they only fire when the screen is active in the
+ * {@link NavigationRouter}. Beans without {@code @TamboScreen} have global key
+ * bindings that fire regardless of the active screen.
+ * <p>
  * Lifecycle phase is {@code Integer.MAX_VALUE - 2}, which runs before
  * {@link TamboSpringApp} (phase {@code Integer.MAX_VALUE - 1}).
  */
@@ -37,21 +43,27 @@ public class OnKeyRegistrar implements BeanPostProcessor, SmartLifecycle {
     private static final Logger log = LoggerFactory.getLogger(OnKeyRegistrar.class);
 
     private final TamboSpringApp tamboSpringApp;
+    private final NavigationRouter navigationRouter;
     private final List<KeyBinding> bindings = new ArrayList<>();
     private volatile boolean running = false;
 
     /**
      * Creates a new OnKeyRegistrar.
      *
-     * @param tamboSpringApp the TamboUI Spring application providing the {@link ToolkitRunner}
+     * @param tamboSpringApp   the TamboUI Spring application providing the {@link ToolkitRunner}
+     * @param navigationRouter the navigation router for screen-scoped key bindings
      */
-    public OnKeyRegistrar(TamboSpringApp tamboSpringApp) {
+    public OnKeyRegistrar(TamboSpringApp tamboSpringApp, NavigationRouter navigationRouter) {
         this.tamboSpringApp = tamboSpringApp;
+        this.navigationRouter = navigationRouter;
     }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         Class<?> targetClass = bean.getClass();
+
+        // Check if the bean has @TamboScreen for screen-scoping
+        String screenName = resolveScreenName(targetClass, beanName);
 
         ReflectionUtils.doWithMethods(targetClass, method -> {
             OnKey onKey = method.getAnnotation(OnKey.class);
@@ -63,9 +75,14 @@ public class OnKeyRegistrar implements BeanPostProcessor, SmartLifecycle {
 
             try {
                 ParsedBinding parsed = KeyBindingParser.parse(onKey.value());
-                bindings.add(new KeyBinding(bean, method, parsed, onKey.value()));
-                log.debug("Discovered @OnKey(\"{}\") on {}.{}()", onKey.value(), targetClass.getSimpleName(),
-                        method.getName());
+                bindings.add(new KeyBinding(bean, method, parsed, onKey.value(), screenName));
+                if (screenName != null) {
+                    log.debug("Discovered @OnKey(\"{}\") on {}.{}() scoped to screen '{}'",
+                            onKey.value(), targetClass.getSimpleName(), method.getName(), screenName);
+                } else {
+                    log.debug("Discovered @OnKey(\"{}\") on {}.{}() (global)",
+                            onKey.value(), targetClass.getSimpleName(), method.getName());
+                }
             } catch (IllegalArgumentException e) {
                 throw new BeansException(
                         "Invalid @OnKey value \"%s\" on method %s.%s(): %s"
@@ -76,6 +93,39 @@ public class OnKeyRegistrar implements BeanPostProcessor, SmartLifecycle {
         });
 
         return bean;
+    }
+
+    /**
+     * Resolves the screen name for a bean class by checking for {@link TamboScreen}.
+     * Returns {@code null} if the bean is not annotated with {@code @TamboScreen},
+     * meaning its key bindings will be global.
+     */
+    private String resolveScreenName(Class<?> beanClass, String beanName) {
+        TamboScreen tamboScreen = findTamboScreenAnnotation(beanClass);
+        if (tamboScreen == null) {
+            return null;
+        }
+        String value = tamboScreen.value();
+        if (value != null && !value.isBlank()) {
+            return value;
+        }
+        return beanName;
+    }
+
+    /**
+     * Walks the class hierarchy to find the {@link TamboScreen} annotation,
+     * which may be on a superclass when the bean is a CGLIB proxy.
+     */
+    private TamboScreen findTamboScreenAnnotation(Class<?> clazz) {
+        Class<?> current = clazz;
+        while (current != null && current != Object.class) {
+            TamboScreen annotation = current.getAnnotation(TamboScreen.class);
+            if (annotation != null) {
+                return annotation;
+            }
+            current = current.getSuperclass();
+        }
+        return null;
     }
 
     /**
@@ -121,10 +171,18 @@ public class OnKeyRegistrar implements BeanPostProcessor, SmartLifecycle {
     public void registerHandlers(EventRouter eventRouter) {
         for (KeyBinding binding : bindings) {
             eventRouter.addGlobalHandler(event -> handleEvent(event, binding));
-            log.info("Registered @OnKey(\"{}\") handler: {}.{}()",
-                    binding.keyExpression(),
-                    binding.bean().getClass().getSimpleName(),
-                    binding.method().getName());
+            if (binding.screenName() != null) {
+                log.info("Registered @OnKey(\"{}\") handler: {}.{}() (screen: {})",
+                        binding.keyExpression(),
+                        binding.bean().getClass().getSimpleName(),
+                        binding.method().getName(),
+                        binding.screenName());
+            } else {
+                log.info("Registered @OnKey(\"{}\") handler: {}.{}() (global)",
+                        binding.keyExpression(),
+                        binding.bean().getClass().getSimpleName(),
+                        binding.method().getName());
+            }
         }
     }
 
@@ -153,6 +211,14 @@ public class OnKeyRegistrar implements BeanPostProcessor, SmartLifecycle {
 
         if (!binding.parsed().matches(keyEvent)) {
             return EventResult.UNHANDLED;
+        }
+
+        // Screen-scoped bindings only fire when their screen is active
+        if (binding.screenName() != null) {
+            String activeScreen = navigationRouter.getActiveScreen();
+            if (!binding.screenName().equals(activeScreen)) {
+                return EventResult.UNHANDLED;
+            }
         }
 
         try {
@@ -191,13 +257,15 @@ public class OnKeyRegistrar implements BeanPostProcessor, SmartLifecycle {
     }
 
     /**
-     * Holds a discovered {@code @OnKey} binding: the bean, method, parsed key, and original expression.
+     * Holds a discovered {@code @OnKey} binding: the bean, method, parsed key, original expression,
+     * and optional screen name for scoping.
      *
      * @param bean          the bean instance owning the method
      * @param method        the annotated method
      * @param parsed        the parsed key binding
      * @param keyExpression the original {@code @OnKey} value string
+     * @param screenName    the screen name from {@code @TamboScreen} for scoping, or {@code null} for global bindings
      */
-    record KeyBinding(Object bean, Method method, ParsedBinding parsed, String keyExpression) {
+    record KeyBinding(Object bean, Method method, ParsedBinding parsed, String keyExpression, String screenName) {
     }
 }

@@ -12,8 +12,10 @@ import dev.tamboui.tui.event.KeyEvent;
 import dev.tamboui.tui.event.KeyModifiers;
 
 import io.github.kylekreuter.tamboui.spring.annotation.OnKey;
+import io.github.kylekreuter.tamboui.spring.annotation.TamboScreen;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,12 +47,15 @@ class OnKeyRegistrarTest {
     @Mock
     private EventRouter eventRouter;
 
+    @Mock
+    private NavigationRouter navigationRouter;
+
     private OnKeyRegistrar registrar;
 
     @BeforeEach
     void setUp() {
         when(toolkitRunner.eventRouter()).thenReturn(eventRouter);
-        registrar = new OnKeyRegistrar(tamboSpringApp);
+        registrar = new OnKeyRegistrar(tamboSpringApp, navigationRouter);
     }
 
     @Test
@@ -326,6 +331,168 @@ class OnKeyRegistrarTest {
         assertThat(bean.handled).isFalse();
     }
 
+    // ==================== Screen-Scoping Tests ====================
+
+    @Nested
+    @DisplayName("Screen-Scoping")
+    class ScreenScopingTests {
+
+        @Test
+        @DisplayName("should set screenName on binding for @TamboScreen beans")
+        void shouldSetScreenNameForTamboScreenBeans() {
+            DashboardScreenBean bean = new DashboardScreenBean();
+
+            registrar.postProcessAfterInitialization(bean, "dashboardScreenBean");
+
+            assertThat(registrar.getBindings()).hasSize(1);
+            assertThat(registrar.getBindings().get(0).screenName()).isEqualTo("dashboardScreenBean");
+        }
+
+        @Test
+        @DisplayName("should use @TamboScreen.value() as screenName when provided")
+        void shouldUseTamboScreenValueAsScreenName() {
+            NamedScreenBean bean = new NamedScreenBean();
+
+            registrar.postProcessAfterInitialization(bean, "namedScreenBean");
+
+            assertThat(registrar.getBindings()).hasSize(1);
+            assertThat(registrar.getBindings().get(0).screenName()).isEqualTo("myDashboard");
+        }
+
+        @Test
+        @DisplayName("should have null screenName for beans without @TamboScreen")
+        void shouldHaveNullScreenNameForRegularBeans() {
+            SampleBean bean = new SampleBean();
+
+            registrar.postProcessAfterInitialization(bean, "sampleBean");
+
+            assertThat(registrar.getBindings()).hasSize(1);
+            assertThat(registrar.getBindings().get(0).screenName()).isNull();
+        }
+
+        @Test
+        @DisplayName("should fire screen-scoped handler when screen is active")
+        void shouldFireWhenScreenIsActive() {
+            DashboardScreenBean bean = new DashboardScreenBean();
+            registrar.postProcessAfterInitialization(bean, "dashboard");
+            when(navigationRouter.getActiveScreen()).thenReturn("dashboard");
+
+            ArgumentCaptor<GlobalEventHandler> captor = ArgumentCaptor.forClass(GlobalEventHandler.class);
+            registrar.registerHandlers(eventRouter);
+            verify(eventRouter).addGlobalHandler(captor.capture());
+
+            GlobalEventHandler handler = captor.getValue();
+            KeyEvent event = KeyEvent.ofChar('q');
+            EventResult result = handler.handle(event);
+
+            assertThat(result).isEqualTo(EventResult.HANDLED);
+            assertThat(bean.handled).isTrue();
+        }
+
+        @Test
+        @DisplayName("should NOT fire screen-scoped handler when different screen is active")
+        void shouldNotFireWhenDifferentScreenActive() {
+            DashboardScreenBean bean = new DashboardScreenBean();
+            registrar.postProcessAfterInitialization(bean, "dashboard");
+            when(navigationRouter.getActiveScreen()).thenReturn("settings");
+
+            ArgumentCaptor<GlobalEventHandler> captor = ArgumentCaptor.forClass(GlobalEventHandler.class);
+            registrar.registerHandlers(eventRouter);
+            verify(eventRouter).addGlobalHandler(captor.capture());
+
+            GlobalEventHandler handler = captor.getValue();
+            KeyEvent event = KeyEvent.ofChar('q');
+            EventResult result = handler.handle(event);
+
+            assertThat(result).isEqualTo(EventResult.UNHANDLED);
+            assertThat(bean.handled).isFalse();
+        }
+
+        @Test
+        @DisplayName("should NOT fire screen-scoped handler when no screen is active")
+        void shouldNotFireWhenNoScreenActive() {
+            DashboardScreenBean bean = new DashboardScreenBean();
+            registrar.postProcessAfterInitialization(bean, "dashboard");
+            when(navigationRouter.getActiveScreen()).thenReturn(null);
+
+            ArgumentCaptor<GlobalEventHandler> captor = ArgumentCaptor.forClass(GlobalEventHandler.class);
+            registrar.registerHandlers(eventRouter);
+            verify(eventRouter).addGlobalHandler(captor.capture());
+
+            GlobalEventHandler handler = captor.getValue();
+            KeyEvent event = KeyEvent.ofChar('q');
+            EventResult result = handler.handle(event);
+
+            assertThat(result).isEqualTo(EventResult.UNHANDLED);
+            assertThat(bean.handled).isFalse();
+        }
+
+        @Test
+        @DisplayName("global handlers should fire regardless of active screen")
+        void globalHandlersShouldAlwaysFire() {
+            SampleBean bean = new SampleBean();
+            registrar.postProcessAfterInitialization(bean, "sampleBean");
+            when(navigationRouter.getActiveScreen()).thenReturn("anyScreen");
+
+            ArgumentCaptor<GlobalEventHandler> captor = ArgumentCaptor.forClass(GlobalEventHandler.class);
+            registrar.registerHandlers(eventRouter);
+            verify(eventRouter).addGlobalHandler(captor.capture());
+
+            GlobalEventHandler handler = captor.getValue();
+            KeyEvent event = KeyEvent.ofChar('q');
+            EventResult result = handler.handle(event);
+
+            assertThat(result).isEqualTo(EventResult.HANDLED);
+            assertThat(bean.qPressed).isTrue();
+        }
+
+        @Test
+        @DisplayName("global handlers should fire when no screen is active")
+        void globalHandlersShouldFireWithoutActiveScreen() {
+            SampleBean bean = new SampleBean();
+            registrar.postProcessAfterInitialization(bean, "sampleBean");
+            when(navigationRouter.getActiveScreen()).thenReturn(null);
+
+            ArgumentCaptor<GlobalEventHandler> captor = ArgumentCaptor.forClass(GlobalEventHandler.class);
+            registrar.registerHandlers(eventRouter);
+            verify(eventRouter).addGlobalHandler(captor.capture());
+
+            GlobalEventHandler handler = captor.getValue();
+            KeyEvent event = KeyEvent.ofChar('q');
+            EventResult result = handler.handle(event);
+
+            assertThat(result).isEqualTo(EventResult.HANDLED);
+            assertThat(bean.qPressed).isTrue();
+        }
+
+        @Test
+        @DisplayName("mixed: screen-scoped and global handlers coexist correctly")
+        void mixedScreenScopedAndGlobalHandlers() {
+            DashboardScreenBean dashBean = new DashboardScreenBean();
+            CtrlCBean globalBean = new CtrlCBean();
+
+            registrar.postProcessAfterInitialization(dashBean, "dashboard");
+            registrar.postProcessAfterInitialization(globalBean, "ctrlCBean");
+            when(navigationRouter.getActiveScreen()).thenReturn("settings"); // NOT dashboard
+
+            ArgumentCaptor<GlobalEventHandler> captor = ArgumentCaptor.forClass(GlobalEventHandler.class);
+            registrar.registerHandlers(eventRouter);
+            verify(eventRouter, org.mockito.Mockito.times(2)).addGlobalHandler(captor.capture());
+
+            java.util.List<GlobalEventHandler> handlers = captor.getAllValues();
+
+            // 'q' should NOT fire on dashboard bean (wrong screen)
+            KeyEvent qEvent = KeyEvent.ofChar('q');
+            assertThat(handlers.get(0).handle(qEvent)).isEqualTo(EventResult.UNHANDLED);
+            assertThat(dashBean.handled).isFalse();
+
+            // Ctrl+C should fire on global bean (no screen scoping)
+            KeyEvent ctrlCEvent = KeyEvent.ofChar('c', KeyModifiers.CTRL);
+            assertThat(handlers.get(1).handle(ctrlCEvent)).isEqualTo(EventResult.HANDLED);
+            assertThat(globalBean.handled).isTrue();
+        }
+    }
+
     // --- Test beans ---
 
     static class SampleBean {
@@ -380,5 +547,31 @@ class OnKeyRegistrarTest {
         void onCtrlC() {
             handled = true;
         }
+    }
+
+    @TamboScreen(template = "dashboard")
+    static class DashboardScreenBean implements ScreenController {
+        boolean handled = false;
+
+        @OnKey("q")
+        void onQuit() {
+            handled = true;
+        }
+
+        @Override
+        public void populate(TemplateModel model) {}
+    }
+
+    @TamboScreen(value = "myDashboard", template = "dashboard")
+    static class NamedScreenBean implements ScreenController {
+        boolean handled = false;
+
+        @OnKey("q")
+        void onQuit() {
+            handled = true;
+        }
+
+        @Override
+        public void populate(TemplateModel model) {}
     }
 }
