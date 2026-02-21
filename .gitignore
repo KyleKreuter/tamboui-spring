@@ -45,5 +45,8 @@ AGENTS.md
 .claude/
 .agents/
 
+# Local notes
+todo/
+docs/
 # Worktrees
 .teams/
