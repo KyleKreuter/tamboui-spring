@@ -1,2 +1,511 @@
-/* TamboUI Spring Boot — Tailwind-like utility classes */
-/* This file will be populated with utility classes like text-red, border-rounded, flex-row, p-1, etc. */
+/* ============================================================================
+ * TamboUI Spring Boot — Tailwind-like Utility CSS Classes
+ * ============================================================================
+ * Provides a comprehensive set of utility classes for terminal UI styling.
+ * Classes follow the pattern: .{property}-{value}
+ * ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+ * Colors: .text-{color}
+ * ---------------------------------------------------------------------------- */
+
+.text-black {
+    color: black;
+}
+
+.text-red {
+    color: red;
+}
+
+.text-green {
+    color: green;
+}
+
+.text-yellow {
+    color: yellow;
+}
+
+.text-blue {
+    color: blue;
+}
+
+.text-magenta {
+    color: magenta;
+}
+
+.text-cyan {
+    color: cyan;
+}
+
+.text-white {
+    color: white;
+}
+
+.text-gray {
+    color: gray;
+}
+
+.text-dark-gray {
+    color: dark-gray;
+}
+
+.text-light-red {
+    color: light-red;
+}
+
+.text-light-green {
+    color: light-green;
+}
+
+.text-light-yellow {
+    color: light-yellow;
+}
+
+.text-light-blue {
+    color: light-blue;
+}
+
+.text-light-magenta {
+    color: light-magenta;
+}
+
+.text-light-cyan {
+    color: light-cyan;
+}
+
+/* ----------------------------------------------------------------------------
+ * Background Colors: .bg-{color}
+ * ---------------------------------------------------------------------------- */
+
+.bg-black {
+    background: black;
+}
+
+.bg-red {
+    background: red;
+}
+
+.bg-green {
+    background: green;
+}
+
+.bg-yellow {
+    background: yellow;
+}
+
+.bg-blue {
+    background: blue;
+}
+
+.bg-magenta {
+    background: magenta;
+}
+
+.bg-cyan {
+    background: cyan;
+}
+
+.bg-white {
+    background: white;
+}
+
+.bg-gray {
+    background: gray;
+}
+
+.bg-dark-gray {
+    background: dark-gray;
+}
+
+.bg-light-red {
+    background: light-red;
+}
+
+.bg-light-green {
+    background: light-green;
+}
+
+.bg-light-yellow {
+    background: light-yellow;
+}
+
+.bg-light-blue {
+    background: light-blue;
+}
+
+.bg-light-magenta {
+    background: light-magenta;
+}
+
+.bg-light-cyan {
+    background: light-cyan;
+}
+
+/* ----------------------------------------------------------------------------
+ * Typography: Text style modifiers
+ * ---------------------------------------------------------------------------- */
+
+.bold {
+    text-style: bold;
+}
+
+.dim {
+    text-style: dim;
+}
+
+.italic {
+    text-style: italic;
+}
+
+.underlined {
+    text-style: underlined;
+}
+
+.reversed {
+    text-style: reversed;
+}
+
+.crossed-out {
+    text-style: crossed-out;
+}
+
+/* ----------------------------------------------------------------------------
+ * Padding: .p-{0-4}, .px-{0-4}, .py-{0-4}, .pt-{0-2}, .pr-{0-2}, .pb-{0-2}, .pl-{0-2}
+ * ---------------------------------------------------------------------------- */
+
+/* Uniform padding */
+.p-0 {
+    padding: 0;
+}
+
+.p-1 {
+    padding: 1;
+}
+
+.p-2 {
+    padding: 2;
+}
+
+.p-3 {
+    padding: 3;
+}
+
+.p-4 {
+    padding: 4;
+}
+
+/* Horizontal padding (left + right) */
+.px-0 {
+    padding: 0 0;
+}
+
+.px-1 {
+    padding: 0 1;
+}
+
+.px-2 {
+    padding: 0 2;
+}
+
+.px-3 {
+    padding: 0 3;
+}
+
+.px-4 {
+    padding: 0 4;
+}
+
+/* Vertical padding (top + bottom) */
+.py-0 {
+    padding: 0 0;
+}
+
+.py-1 {
+    padding: 1 0;
+}
+
+.py-2 {
+    padding: 2 0;
+}
+
+.py-3 {
+    padding: 3 0;
+}
+
+.py-4 {
+    padding: 4 0;
+}
+
+/* Individual padding sides */
+.pt-0 {
+    padding: 0 0 0 0;
+}
+
+.pt-1 {
+    padding: 1 0 0 0;
+}
+
+.pt-2 {
+    padding: 2 0 0 0;
+}
+
+.pr-0 {
+    padding: 0 0 0 0;
+}
+
+.pr-1 {
+    padding: 0 1 0 0;
+}
+
+.pr-2 {
+    padding: 0 2 0 0;
+}
+
+.pb-0 {
+    padding: 0 0 0 0;
+}
+
+.pb-1 {
+    padding: 0 0 1 0;
+}
+
+.pb-2 {
+    padding: 0 0 2 0;
+}
+
+.pl-0 {
+    padding: 0 0 0 0;
+}
+
+.pl-1 {
+    padding: 0 0 0 1;
+}
+
+.pl-2 {
+    padding: 0 0 0 2;
+}
+
+/* ----------------------------------------------------------------------------
+ * Margin: .m-{0-4}, .mx-{0-4}, .my-{0-4}
+ * ---------------------------------------------------------------------------- */
+
+/* Uniform margin */
+.m-0 {
+    margin: 0;
+}
+
+.m-1 {
+    margin: 1;
+}
+
+.m-2 {
+    margin: 2;
+}
+
+.m-3 {
+    margin: 3;
+}
+
+.m-4 {
+    margin: 4;
+}
+
+/* Horizontal margin (left + right) */
+.mx-0 {
+    margin: 0 0;
+}
+
+.mx-1 {
+    margin: 0 1;
+}
+
+.mx-2 {
+    margin: 0 2;
+}
+
+.mx-3 {
+    margin: 0 3;
+}
+
+.mx-4 {
+    margin: 0 4;
+}
+
+/* Vertical margin (top + bottom) */
+.my-0 {
+    margin: 0 0;
+}
+
+.my-1 {
+    margin: 1 0;
+}
+
+.my-2 {
+    margin: 2 0;
+}
+
+.my-3 {
+    margin: 3 0;
+}
+
+.my-4 {
+    margin: 4 0;
+}
+
+/* ----------------------------------------------------------------------------
+ * Layout: Flex alignment
+ * ---------------------------------------------------------------------------- */
+
+.flex-start {
+    flex: start;
+}
+
+.flex-center {
+    flex: center;
+}
+
+.flex-end {
+    flex: end;
+}
+
+.flex-between {
+    flex: space-between;
+}
+
+.flex-around {
+    flex: space-around;
+}
+
+.flex-evenly {
+    flex: space-evenly;
+}
+
+/* Direction */
+.direction-horizontal {
+    direction: horizontal;
+}
+
+.direction-vertical {
+    direction: vertical;
+}
+
+/* Gap / Spacing */
+.gap-0 {
+    spacing: 0;
+}
+
+.gap-1 {
+    spacing: 1;
+}
+
+.gap-2 {
+    spacing: 2;
+}
+
+.gap-3 {
+    spacing: 3;
+}
+
+.gap-4 {
+    spacing: 4;
+}
+
+/* ----------------------------------------------------------------------------
+ * Sizing: Width and Height
+ * ---------------------------------------------------------------------------- */
+
+.w-fill {
+    width: fill;
+}
+
+.w-fit {
+    width: fit;
+}
+
+.w-25 {
+    width: 25%;
+}
+
+.w-50 {
+    width: 50%;
+}
+
+.w-75 {
+    width: 75%;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.h-fill {
+    height: fill;
+}
+
+.h-fit {
+    height: fit;
+}
+
+.h-25 {
+    height: 25%;
+}
+
+.h-50 {
+    height: 50%;
+}
+
+.h-75 {
+    height: 75%;
+}
+
+.h-100 {
+    height: 100%;
+}
+
+/* ----------------------------------------------------------------------------
+ * Borders: .border-{type}
+ * ---------------------------------------------------------------------------- */
+
+.border-none {
+    border-type: none;
+}
+
+.border-plain {
+    border-type: plain;
+}
+
+.border-rounded {
+    border-type: rounded;
+}
+
+.border-double {
+    border-type: double;
+}
+
+.border-thick {
+    border-type: thick;
+}
+
+/* ----------------------------------------------------------------------------
+ * Text Alignment and Overflow
+ * ---------------------------------------------------------------------------- */
+
+.text-left {
+    text-align: left;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-clip {
+    text-overflow: clip;
+}
+
+.text-wrap {
+    text-overflow: wrap;
+}

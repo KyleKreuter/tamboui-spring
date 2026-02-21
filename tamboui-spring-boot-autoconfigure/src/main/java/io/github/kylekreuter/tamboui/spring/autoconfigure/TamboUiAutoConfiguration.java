@@ -7,7 +7,9 @@ import io.github.kylekreuter.tamboui.spring.core.OnKeyRegistrar;
 import io.github.kylekreuter.tamboui.spring.core.OnSubmitRegistrar;
 import io.github.kylekreuter.tamboui.spring.core.ScreenAutoDiscovery;
 import io.github.kylekreuter.tamboui.spring.core.TamboSpringApp;
+import io.github.kylekreuter.tamboui.spring.core.TamboUiStyleConfigurer;
 import io.github.kylekreuter.tamboui.spring.core.ToolkitRunnerFactory;
+import io.github.kylekreuter.tamboui.spring.core.UtilityCssLoader;
 import io.github.kylekreuter.tamboui.spring.template.TagHandler;
 import io.github.kylekreuter.tamboui.spring.template.TemplateCache;
 import io.github.kylekreuter.tamboui.spring.template.TemplateEngine;
@@ -110,6 +112,29 @@ public class TamboUiAutoConfiguration {
     @ConditionalOnMissingBean
     public TamboSpringApp tamboSpringApp(ToolkitRunnerFactory toolkitRunnerFactory) {
         return new TamboSpringApp(toolkitRunnerFactory);
+    }
+
+    /**
+     * Loads the utility CSS stylesheet from the classpath.
+     * <p>
+     * The resource path is configurable via {@code tamboui.utility-css} property
+     * (default: {@code META-INF/tamboui-spring/utility.tcss}).
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public UtilityCssLoader utilityCssLoader(TamboUiProperties properties) {
+        return new UtilityCssLoader(properties.getUtilityCss());
+    }
+
+    /**
+     * Configures TamboUI styling by loading the utility CSS into the
+     * {@link dev.tamboui.css.engine.StyleEngine} when the ToolkitRunner becomes ready.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public TamboUiStyleConfigurer tamboUiStyleConfigurer(UtilityCssLoader utilityCssLoader,
+                                                          TamboSpringApp tamboSpringApp) {
+        return new TamboUiStyleConfigurer(utilityCssLoader, tamboSpringApp);
     }
 
     @Bean
