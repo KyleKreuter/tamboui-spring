@@ -1,8 +1,11 @@
 package io.github.kylekreuter.tamboui.spring.core;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import dev.tamboui.toolkit.Toolkit;
@@ -36,6 +39,7 @@ public class TamboSpringApp implements SmartLifecycle {
 
     private final ToolkitRunnerFactory runnerFactory;
     private final Supplier<Element> rootElementSupplier;
+    private final List<Consumer<ToolkitRunner>> runnerReadyCallbacks = new ArrayList<>();
 
     private volatile boolean running = false;
     private final AtomicReference<ToolkitRunner> runnerRef = new AtomicReference<>();
@@ -79,6 +83,7 @@ public class TamboSpringApp implements SmartLifecycle {
         Thread renderThread = new Thread(() -> {
             try (ToolkitRunner runner = runnerFactory.create()) {
                 runnerRef.set(runner);
+                notifyRunnerReady(runner);
                 startedLatch.countDown();
                 runner.run(rootElementSupplier);
             } catch (Exception e) {
@@ -149,11 +154,42 @@ public class TamboSpringApp implements SmartLifecycle {
     }
 
     /**
+     * Invokes all registered runner-ready callbacks and clears the list.
+     */
+    private void notifyRunnerReady(ToolkitRunner runner) {
+        for (Consumer<ToolkitRunner> callback : runnerReadyCallbacks) {
+            try {
+                callback.accept(runner);
+            } catch (Exception e) {
+                log.error("Error in runner-ready callback", e);
+            }
+        }
+        runnerReadyCallbacks.clear();
+    }
+
+    /**
      * Returns the active {@link ToolkitRunner}, or {@code null} if the app is not running.
      *
      * @return the active runner, or null
      */
     public ToolkitRunner getRunner() {
         return runnerRef.get();
+    }
+
+    /**
+     * Registers a callback that will be invoked once the {@link ToolkitRunner}
+     * has been created and is ready to accept event handlers.
+     * <p>
+     * If the runner is already available, the callback is invoked immediately.
+     *
+     * @param callback the callback receiving the ready runner
+     */
+    public void onRunnerReady(Consumer<ToolkitRunner> callback) {
+        ToolkitRunner current = runnerRef.get();
+        if (current != null) {
+            callback.accept(current);
+        } else {
+            runnerReadyCallbacks.add(callback);
+        }
     }
 }
