@@ -1,8 +1,10 @@
 package io.github.kylekreuter.tamboui.spring.core;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -29,6 +31,7 @@ public class NavigationRouter {
     private final Map<String, ScreenController> screenControllers = new ConcurrentHashMap<>();
     private final Map<String, String> screenTemplates = new ConcurrentHashMap<>();
     private final List<ScreenChangeListener> listeners = new CopyOnWriteArrayList<>();
+    private final Set<String> mountedScreens = ConcurrentHashMap.newKeySet();
 
     /**
      * Listener that is notified when the active screen changes.
@@ -77,9 +80,17 @@ public class NavigationRouter {
      * Navigate to the screen with the given name.
      * <p>
      * Sets the active screen, resolves the associated {@link ScreenController},
-     * and notifies all registered {@link ScreenChangeListener}s. The rendering
-     * pipeline (typically {@link TamboSpringApp}) reacts to this event by
-     * switching to the new screen's template.
+     * invokes lifecycle hooks in the correct order, and notifies all registered
+     * {@link ScreenChangeListener}s. The rendering pipeline (typically
+     * {@link TamboSpringApp}) reacts to this event by switching to the new
+     * screen's template.
+     * <p>
+     * <b>Lifecycle hook order:</b>
+     * <ol>
+     *   <li>{@link ScreenController#onDeactivate()} on the previous screen's controller (if any)</li>
+     *   <li>{@link ScreenController#onMount()} on the new screen's controller (first time only)</li>
+     *   <li>{@link ScreenController#onActivate()} on the new screen's controller (every time)</li>
+     * </ol>
      *
      * @param screenName the target screen name
      * @throws IllegalArgumentException if {@code screenName} is {@code null} or blank
@@ -100,7 +111,24 @@ public class NavigationRouter {
 
         String templateName = screenTemplates.get(screenName);
         String previousScreen = this.activeScreen;
+
+        // 1. Deactivate the previous screen's controller (if any)
+        if (previousScreen != null) {
+            ScreenController previousController = screenControllers.get(previousScreen);
+            if (previousController != null) {
+                previousController.onDeactivate();
+            }
+        }
+
         this.activeScreen = screenName;
+
+        // 2. Mount the new screen's controller (first time only)
+        if (mountedScreens.add(screenName)) {
+            controller.onMount();
+        }
+
+        // 3. Activate the new screen's controller (every time)
+        controller.onActivate();
 
         for (ScreenChangeListener listener : listeners) {
             listener.onScreenChange(previousScreen, screenName, controller, templateName);
@@ -161,8 +189,86 @@ public class NavigationRouter {
      *
      * @return the set of registered screen names
      */
-    public java.util.Set<String> getRegisteredScreens() {
-        return java.util.Collections.unmodifiableSet(screenControllers.keySet());
+    public Set<String> getRegisteredScreens() {
+        return Collections.unmodifiableSet(screenControllers.keySet());
+    }
+
+    /**
+     * Check whether the given screen has been mounted (i.e. navigated to at least once).
+     *
+     * @param screenName the screen name to check
+     * @return {@code true} if the screen has been mounted
+     */
+    public boolean isMounted(String screenName) {
+        return mountedScreens.contains(screenName);
+    }
+
+    /**
+     * Return an unmodifiable view of all mounted screen names.
+     *
+     * @return the set of screen names that have been mounted
+     */
+    public Set<String> getMountedScreens() {
+        return Collections.unmodifiableSet(mountedScreens);
+    }
+
+    /**
+     * Unregister a screen by name and call {@link ScreenController#onUnmount()} if
+     * the screen was previously mounted.
+     * <p>
+     * If the screen being removed is the currently active screen, the active screen
+     * is set to {@code null} and {@link ScreenController#onDeactivate()} is called
+     * before unmounting.
+     *
+     * @param screenName the screen name to unregister
+     * @return {@code true} if a screen was removed, {@code false} if no such screen existed
+     */
+    public boolean unregisterScreen(String screenName) {
+        ScreenController controller = screenControllers.remove(screenName);
+        if (controller == null) {
+            return false;
+        }
+        screenTemplates.remove(screenName);
+
+        // Deactivate if this was the active screen
+        if (screenName.equals(activeScreen)) {
+            controller.onDeactivate();
+            this.activeScreen = null;
+        }
+
+        // Unmount if the screen was previously mounted
+        if (mountedScreens.remove(screenName)) {
+            controller.onUnmount();
+        }
+
+        return true;
+    }
+
+    /**
+     * Shut down all registered screens by calling {@link ScreenController#onDeactivate()}
+     * on the active screen and {@link ScreenController#onUnmount()} on all mounted screens.
+     * <p>
+     * After shutdown, all internal state is cleared. This method is intended to be called
+     * during application shutdown.
+     */
+    public void shutdown() {
+        // Deactivate the currently active screen
+        if (activeScreen != null) {
+            ScreenController activeController = screenControllers.get(activeScreen);
+            if (activeController != null) {
+                activeController.onDeactivate();
+            }
+            this.activeScreen = null;
+        }
+
+        // Unmount all mounted screens
+        for (String screenName : mountedScreens) {
+            ScreenController controller = screenControllers.get(screenName);
+            if (controller != null) {
+                controller.onUnmount();
+            }
+        }
+        mountedScreens.clear();
     }
 
     /**
