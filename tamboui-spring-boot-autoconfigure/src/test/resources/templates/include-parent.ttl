@@ -1,3 +1,4 @@
-<t:panel title="Parent">
+<t:panel xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+         title="Parent">
   <t:include template="include-fragment" />
 </t:panel>

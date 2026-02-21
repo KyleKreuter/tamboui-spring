@@ -323,6 +323,14 @@ public class TemplateEngine {
             parentHandler.addChildren(widget, childWidgets);
         }
 
+        // Wrap widget as RegionChild if a 'region' attribute is present
+        // (used by DockTagHandler to assign children to dock regions)
+        String region = resolvedAttributes.get("region");
+        if (region != null && !region.isBlank()) {
+            return List.of(
+                    new io.github.kylekreuter.tamboui.spring.template.tags.DockTagHandler.RegionChild(region, widget));
+        }
+
         return List.of(widget);
     }
 
@@ -584,9 +592,10 @@ public class TemplateEngine {
             for (Map.Entry<String, Object> entry : model.entrySet()) {
                 context.setVariable(entry.getKey(), entry.getValue());
             }
-            // Also set a root object so that simple property names like ${title}
-            // work without the # prefix
+            // Set the model map as root object and register MapAccessor so that
+            // simple property names like ${title} resolve to map key lookups
             context.setRootObject(model);
+            context.addPropertyAccessor(new org.springframework.context.expression.MapAccessor());
         }
         return context;
     }

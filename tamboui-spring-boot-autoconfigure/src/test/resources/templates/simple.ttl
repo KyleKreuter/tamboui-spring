@@ -1,3 +1,4 @@
-<t:panel title="Hello">
+<t:panel xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+         title="Hello">
   <t:text t:text="World" />
 </t:panel>

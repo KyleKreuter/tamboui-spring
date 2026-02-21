@@ -1,3 +1,4 @@
-<t:panel title="${['title']}">
+<t:panel xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+         title="${['title']}">
   <t:text t:text="Status: ${['status']}" />
 </t:panel>

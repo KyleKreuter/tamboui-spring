@@ -1,4 +1,5 @@
-<t:panel title="Outer">
+<t:panel xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+         title="Outer">
   <t:panel title="Inner">
     <t:text t:text="Deep" />
   </t:panel>

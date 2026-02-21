@@ -1,4 +1,5 @@
-<t:panel title="Indexed">
+<t:panel xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+         title="Indexed">
   <t:each items="${['names']}" var="name" index="i">
     <t:text t:text="${['i']}. ${['name']}" />
   </t:each>

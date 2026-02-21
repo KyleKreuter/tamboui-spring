@@ -1,6 +1,9 @@
 package io.github.kylekreuter.tamboui.spring.core;
 
+import dev.tamboui.css.cascade.CssStyleResolver;
 import dev.tamboui.css.engine.StyleEngine;
+import dev.tamboui.toolkit.Toolkit;
+import dev.tamboui.toolkit.elements.TextElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +56,18 @@ public class TamboUiStyleConfigurer implements SmartInitializingSingleton {
             utilityCssLoader.loadInto(styleEngine);
             runner.styleEngine(styleEngine);
             log.info("StyleEngine configured and registered with ToolkitRunner");
+
+            // --- CSS diagnostic ---
+            TextElement testText = Toolkit.text("DiagTest");
+            testText.addClass("text-cyan");
+            CssStyleResolver resolved = styleEngine.resolve(testText);
+            log.info("CSS DIAGNOSTIC: .text-cyan hasProperties={}, fg={}",
+                     resolved.hasProperties(), resolved.toStyle().fg());
+            TextElement testBold = Toolkit.text("DiagBold");
+            testBold.addClass("bold");
+            CssStyleResolver resolvedBold = styleEngine.resolve(testBold);
+            log.info("CSS DIAGNOSTIC: .bold hasProperties={}, bold={}",
+                     resolvedBold.hasProperties(), resolvedBold.toStyle().bold());
         });
     }
 }

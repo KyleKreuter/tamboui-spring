@@ -53,7 +53,9 @@ public class PanelTagHandler implements ParentTagHandler {
             }
         }
 
-        return new PanelWidget(builder.build());
+        String cssClass = attributes.get("class");
+
+        return new PanelWidget(builder.build(), title, cssClass);
     }
 
     @Override
@@ -70,14 +72,26 @@ public class PanelTagHandler implements ParentTagHandler {
      */
     public static final class PanelWidget {
         private final Block block;
+        private final String title;
+        private final String cssClass;
         private final List<Object> children = new ArrayList<>();
 
-        public PanelWidget(Block block) {
+        public PanelWidget(Block block, String title, String cssClass) {
             this.block = block;
+            this.title = title;
+            this.cssClass = cssClass;
         }
 
         public Block block() {
             return block;
+        }
+
+        public String title() {
+            return title;
+        }
+
+        public String cssClass() {
+            return cssClass;
         }
 
         public List<Object> children() {

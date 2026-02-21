@@ -1,0 +1,4 @@
+<t:dock xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template">
+  <t:text region="top" t:text="Header" />
+  <t:text region="center" t:text="Content" />
+</t:dock>

@@ -1,4 +1,5 @@
-<t:panel title="Conditional">
+<t:panel xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+         title="Conditional">
   <t:if test="${['visible']}">
     <t:text t:text="Visible" />
   </t:if>

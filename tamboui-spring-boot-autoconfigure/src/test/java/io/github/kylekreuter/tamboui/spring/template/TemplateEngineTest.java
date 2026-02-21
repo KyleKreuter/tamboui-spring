@@ -1,6 +1,8 @@
 package io.github.kylekreuter.tamboui.spring.template;
 
 import io.github.kylekreuter.tamboui.spring.autoconfigure.TamboUiProperties;
+import io.github.kylekreuter.tamboui.spring.template.tags.DockTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.DockTagHandler.DockWidget;
 import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler.PanelWidget;
 import io.github.kylekreuter.tamboui.spring.template.tags.TextTagHandler;
@@ -265,6 +267,58 @@ class TemplateEngineTest {
             assertThrows(TemplateRenderException.class,
                     () -> engine.evaluateSpel("${nonExistentMethod()}", context));
         }
+
+        @Test
+        @DisplayName("should resolve property-style access on map via MapAccessor")
+        void shouldResolvePropertyStyleAccessOnMap() {
+            Object result = engine.render("spel-property", Map.of(
+                    "title", "Dashboard",
+                    "status", "Running"
+            ));
+
+            assertNotNull(result);
+            assertInstanceOf(PanelWidget.class, result);
+
+            PanelWidget panel = (PanelWidget) result;
+            assertNotNull(panel.block());
+            assertEquals(1, panel.children().size());
+            assertInstanceOf(Paragraph.class, panel.children().get(0));
+        }
+
+        @Test
+        @DisplayName("should resolve nested property on map entry via MapAccessor")
+        void shouldResolveNestedPropertyOnMapEntry() {
+            Object result = engine.render("spel-nested", Map.of(
+                    "user", Map.of("name", "John")
+            ));
+
+            assertNotNull(result);
+            assertInstanceOf(Paragraph.class, result);
+        }
+
+        @Test
+        @DisplayName("should resolve mixed property and bracket access in same template")
+        void shouldResolveMixedPropertyAndBracketAccess() {
+            // spel-property.ttl uses ${title} and ${status} (property-style)
+            // Render with same model to confirm property-style works end-to-end
+            Object resultProperty = engine.render("spel-property", Map.of(
+                    "title", "Mixed",
+                    "status", "Active"
+            ));
+
+            // spel.ttl uses ${['title']} and ${['status']} (bracket-style)
+            Object resultBracket = engine.render("spel", Map.of(
+                    "title", "Mixed",
+                    "status", "Active"
+            ));
+
+            // Both styles should produce valid widget trees
+            assertNotNull(resultProperty);
+            assertInstanceOf(PanelWidget.class, resultProperty);
+
+            assertNotNull(resultBracket);
+            assertInstanceOf(PanelWidget.class, resultBracket);
+        }
     }
 
     // ========================================================================
@@ -392,6 +446,50 @@ class TemplateEngineTest {
             Object result = engine.render("attributes", Map.of());
             assertNotNull(result);
             assertInstanceOf(PanelWidget.class, result);
+        }
+    }
+
+    // ========================================================================
+    // Region attribute wrapping tests
+    // ========================================================================
+
+    @Nested
+    @DisplayName("Region attribute wrapping")
+    class RegionTests {
+
+        private TemplateEngine dockEngine;
+
+        @BeforeEach
+        void setUp() {
+            dockEngine = new TemplateEngine(cache, properties, List.of(
+                    new PanelTagHandler(),
+                    new TextTagHandler(),
+                    new DockTagHandler()
+            ));
+        }
+
+        @Test
+        @DisplayName("should wrap children with region attribute as RegionChild and assign to DockWidget regions")
+        void shouldWrapChildrenWithRegionAttribute() {
+            Object result = dockEngine.render("dock-with-regions", Map.of());
+
+            assertNotNull(result);
+            assertInstanceOf(DockWidget.class, result);
+
+            DockWidget dock = (DockWidget) result;
+
+            // Top region should contain the "Header" text widget
+            assertNotNull(dock.top(), "Top region should be set");
+            assertInstanceOf(Paragraph.class, dock.top());
+
+            // Center region should contain the "Content" text widget
+            assertNotNull(dock.center(), "Center region should be set");
+            assertInstanceOf(Paragraph.class, dock.center());
+
+            // Other regions should be null (not assigned in the template)
+            assertNull(dock.left(), "Left region should not be set");
+            assertNull(dock.right(), "Right region should not be set");
+            assertNull(dock.bottom(), "Bottom region should not be set");
         }
     }
 }

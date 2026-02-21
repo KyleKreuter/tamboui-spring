@@ -1,2 +1,2 @@
 <t:text xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
-        t:text="Included: ${['message']}" />
+        t:text="Hello ${user.name}" />

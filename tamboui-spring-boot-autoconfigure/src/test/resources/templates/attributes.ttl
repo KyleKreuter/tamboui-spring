@@ -1,3 +1,4 @@
-<t:panel title="Styled" borderType="ROUNDED" class="border-rounded">
+<t:panel xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+         title="Styled" borderType="ROUNDED" class="border-rounded">
   <t:text t:text="content" class="text-green" />
 </t:panel>

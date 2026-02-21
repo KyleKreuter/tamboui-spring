@@ -1,1 +1,2 @@
-<t:text t:text="Just text" />
+<t:text xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+        t:text="Just text" />

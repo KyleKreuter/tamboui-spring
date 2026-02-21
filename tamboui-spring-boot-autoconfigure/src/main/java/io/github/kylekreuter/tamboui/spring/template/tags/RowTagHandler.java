@@ -2,8 +2,8 @@ package io.github.kylekreuter.tamboui.spring.template.tags;
 
 import dev.tamboui.layout.Flex;
 import dev.tamboui.layout.Margin;
-import dev.tamboui.toolkit.element.Element;
 import dev.tamboui.toolkit.elements.Row;
+import io.github.kylekreuter.tamboui.spring.core.WidgetToElementConverter;
 import io.github.kylekreuter.tamboui.spring.template.ParentTagHandler;
 
 import java.util.List;
@@ -77,10 +77,9 @@ public class RowTagHandler implements ParentTagHandler {
     @Override
     public void addChildren(Object parent, List<Object> children) {
         if (parent instanceof Row row) {
+            WidgetToElementConverter converter = new WidgetToElementConverter();
             for (Object child : children) {
-                if (child instanceof Element element) {
-                    row.add(element);
-                }
+                row.add(converter.convert(child));
             }
         }
     }

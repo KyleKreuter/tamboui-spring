@@ -95,7 +95,6 @@ public class TamboSpringApp implements SmartLifecycle {
                 log.info("TamboUI rendering loop stopped");
             }
         }, "tamboui-render");
-        renderThread.setDaemon(true);
         renderThread.start();
         renderThreadRef.set(renderThread);
 

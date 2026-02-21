@@ -1,4 +1,4 @@
 <t:panel xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
-         title="A">
-  <t:include template="include-recursive-b" />
+         title="${title}">
+  <t:text t:text="Status: ${status}" />
 </t:panel>

@@ -6,19 +6,27 @@ import io.github.kylekreuter.tamboui.spring.core.NavigationRouter;
 import io.github.kylekreuter.tamboui.spring.core.OnKeyRegistrar;
 import io.github.kylekreuter.tamboui.spring.core.OnSubmitRegistrar;
 import io.github.kylekreuter.tamboui.spring.core.ScreenAutoDiscovery;
+import io.github.kylekreuter.tamboui.spring.core.ScreenController;
 import io.github.kylekreuter.tamboui.spring.core.TamboSpringApp;
 import io.github.kylekreuter.tamboui.spring.core.TamboUiStyleConfigurer;
+import io.github.kylekreuter.tamboui.spring.core.TemplateModel;
 import io.github.kylekreuter.tamboui.spring.core.ToolkitRunnerFactory;
 import io.github.kylekreuter.tamboui.spring.core.UtilityCssLoader;
+import io.github.kylekreuter.tamboui.spring.core.WidgetToElementConverter;
 import io.github.kylekreuter.tamboui.spring.template.TagHandler;
 import io.github.kylekreuter.tamboui.spring.template.TemplateCache;
 import io.github.kylekreuter.tamboui.spring.template.TemplateEngine;
 import io.github.kylekreuter.tamboui.spring.template.tags.ColTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.ColumnTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.DockTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.FormTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.GridTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.InputTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.ItemTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.ListTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.RowTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.SpacerTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TableTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TextTagHandler;
 
@@ -85,6 +93,36 @@ public class TamboUiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    public DockTagHandler dockTagHandler() {
+        return new DockTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public GridTagHandler gridTagHandler() {
+        return new GridTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public RowTagHandler rowTagHandler() {
+        return new RowTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ColumnTagHandler columnTagHandler() {
+        return new ColumnTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public SpacerTagHandler spacerTagHandler() {
+        return new SpacerTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public TemplateEngine templateEngine(TemplateCache templateCache,
                                          TamboUiProperties properties,
                                          List<TagHandler> tagHandlers) {
@@ -110,8 +148,31 @@ public class TamboUiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public TamboSpringApp tamboSpringApp(ToolkitRunnerFactory toolkitRunnerFactory) {
-        return new TamboSpringApp(toolkitRunnerFactory);
+    public WidgetToElementConverter widgetToElementConverter() {
+        return new WidgetToElementConverter();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public TamboSpringApp tamboSpringApp(ToolkitRunnerFactory toolkitRunnerFactory,
+                                          NavigationRouter navigationRouter,
+                                          TemplateEngine templateEngine,
+                                          WidgetToElementConverter converter) {
+        var log = org.slf4j.LoggerFactory.getLogger("tamboui.diagnostic");
+        return new TamboSpringApp(toolkitRunnerFactory, () -> {
+            ScreenController controller = navigationRouter.getActiveController();
+            String templateName = navigationRouter.getActiveTemplateName();
+            if (controller == null || templateName == null) {
+                return dev.tamboui.toolkit.Toolkit.text("No screen active");
+            }
+            TemplateModel model = new TemplateModel();
+            controller.populate(model);
+            Object widget = templateEngine.render(templateName, model.asMap());
+            if (widget == null) {
+                return dev.tamboui.toolkit.Toolkit.text("Empty template: " + templateName);
+            }
+            return converter.convert(widget, model.stateBindings());
+        });
     }
 
     /**
@@ -169,4 +230,5 @@ public class TamboUiAutoConfiguration {
     public OnSubmitRegistrar onSubmitRegistrar() {
         return new OnSubmitRegistrar();
     }
+
 }
