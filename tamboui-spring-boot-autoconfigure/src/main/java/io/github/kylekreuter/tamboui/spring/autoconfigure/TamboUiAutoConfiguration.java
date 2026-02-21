@@ -4,11 +4,14 @@ import dev.tamboui.toolkit.app.ToolkitRunner;
 
 import io.github.kylekreuter.tamboui.spring.core.NavigationRouter;
 import io.github.kylekreuter.tamboui.spring.core.OnKeyRegistrar;
+import io.github.kylekreuter.tamboui.spring.core.OnSubmitRegistrar;
 import io.github.kylekreuter.tamboui.spring.core.TamboSpringApp;
 import io.github.kylekreuter.tamboui.spring.core.ToolkitRunnerFactory;
 import io.github.kylekreuter.tamboui.spring.template.TagHandler;
 import io.github.kylekreuter.tamboui.spring.template.TemplateCache;
 import io.github.kylekreuter.tamboui.spring.template.TemplateEngine;
+import io.github.kylekreuter.tamboui.spring.template.tags.FormTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.InputTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TextTagHandler;
 
@@ -81,7 +84,25 @@ public class TamboUiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    public FormTagHandler formTagHandler() {
+        return new FormTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public InputTagHandler inputTagHandler() {
+        return new InputTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public OnKeyRegistrar onKeyRegistrar(TamboSpringApp tamboSpringApp) {
         return new OnKeyRegistrar(tamboSpringApp);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public OnSubmitRegistrar onSubmitRegistrar() {
+        return new OnSubmitRegistrar();
     }
 }
