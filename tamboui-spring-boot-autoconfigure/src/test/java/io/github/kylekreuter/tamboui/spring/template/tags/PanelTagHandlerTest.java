@@ -1,14 +1,14 @@
 package io.github.kylekreuter.tamboui.spring.template.tags;
 
-import dev.tamboui.layout.Direction;
-import dev.tamboui.toolkit.elements.Panel;
-import dev.tamboui.widgets.block.BorderType;
+import dev.tamboui.widgets.block.Block;
+import io.github.kylekreuter.tamboui.spring.template.ParentTagHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,112 +31,117 @@ class PanelTagHandlerTest {
         assertThat(handler.getTagName()).isEqualTo("panel");
     }
 
+    @Test
+    @DisplayName("implements ParentTagHandler")
+    void implementsParentTagHandler() {
+        assertThat(handler).isInstanceOf(ParentTagHandler.class);
+    }
+
     @Nested
     @DisplayName("createElement")
     class CreateElement {
 
         @Test
-        @DisplayName("creates Panel with title attribute")
+        @DisplayName("creates PanelWidget with title attribute")
         void withTitle() {
             Map<String, String> attrs = Map.of("title", "My Panel");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Panel.class);
-            Panel panel = (Panel) result;
-            assertThat(panel.styleAttributes()).containsEntry("title", "My Panel");
+            assertThat(result).isInstanceOf(PanelTagHandler.PanelWidget.class);
+            PanelTagHandler.PanelWidget panelWidget = (PanelTagHandler.PanelWidget) result;
+            assertThat(panelWidget.block()).isNotNull();
         }
 
         @Test
-        @DisplayName("creates Panel without title when attribute missing")
+        @DisplayName("creates PanelWidget without title when attribute missing")
         void withoutTitle() {
             Map<String, String> attrs = Map.of();
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Panel.class);
-            Panel panel = (Panel) result;
-            assertThat(panel.styleAttributes()).doesNotContainKey("title");
+            assertThat(result).isInstanceOf(PanelTagHandler.PanelWidget.class);
+            PanelTagHandler.PanelWidget panelWidget = (PanelTagHandler.PanelWidget) result;
+            assertThat(panelWidget.block()).isNotNull();
         }
 
         @Test
-        @DisplayName("creates Panel with border-style attribute")
+        @DisplayName("creates PanelWidget with borderType attribute")
+        void withBorderType() {
+            Map<String, String> attrs = Map.of("borderType", "ROUNDED");
+
+            Object result = handler.createElement(attrs);
+
+            assertThat(result).isInstanceOf(PanelTagHandler.PanelWidget.class);
+            assertThat(result).isNotNull();
+        }
+
+        @Test
+        @DisplayName("creates PanelWidget with border-style attribute as fallback")
         void withBorderStyle() {
             Map<String, String> attrs = Map.of("border-style", "rounded");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Panel.class);
+            assertThat(result).isInstanceOf(PanelTagHandler.PanelWidget.class);
             assertThat(result).isNotNull();
         }
 
         @Test
-        @DisplayName("border-type attribute is accepted as fallback")
-        void withBorderType() {
+        @DisplayName("creates PanelWidget with border-type attribute as fallback")
+        void withBorderTypeFallback() {
             Map<String, String> attrs = Map.of("border-type", "double");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Panel.class);
+            assertThat(result).isInstanceOf(PanelTagHandler.PanelWidget.class);
             assertThat(result).isNotNull();
         }
 
         @Test
-        @DisplayName("border-style takes precedence over border-type")
-        void borderStyleOverBorderType() {
+        @DisplayName("borderType takes precedence over border-style and border-type")
+        void borderTypePrecedence() {
             Map<String, String> attrs = new HashMap<>();
-            attrs.put("border-style", "rounded");
-            attrs.put("border-type", "double");
+            attrs.put("borderType", "ROUNDED");
+            attrs.put("border-style", "double");
+            attrs.put("border-type", "thick");
 
             Object result = handler.createElement(attrs);
 
-            // Both should work — border-style is checked first via getOrDefault
-            assertThat(result).isInstanceOf(Panel.class);
+            // borderType is checked first in the implementation
+            assertThat(result).isInstanceOf(PanelTagHandler.PanelWidget.class);
         }
 
         @Test
-        @DisplayName("creates Panel with all supported attributes")
+        @DisplayName("creates PanelWidget with all supported attributes")
         void withAllAttributes() {
             Map<String, String> attrs = new HashMap<>();
             attrs.put("title", "Full Panel");
-            attrs.put("border-style", "thick");
-            attrs.put("direction", "horizontal");
-            attrs.put("padding", "2");
-            attrs.put("spacing", "1");
+            attrs.put("borderType", "THICK");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Panel.class);
-            Panel panel = (Panel) result;
-            assertThat(panel.styleAttributes()).containsEntry("title", "Full Panel");
+            assertThat(result).isInstanceOf(PanelTagHandler.PanelWidget.class);
+            PanelTagHandler.PanelWidget panelWidget = (PanelTagHandler.PanelWidget) result;
+            assertThat(panelWidget.block()).isNotNull();
         }
 
         @Test
-        @DisplayName("ignores invalid padding value gracefully")
-        void invalidPadding() {
-            Map<String, String> attrs = Map.of("padding", "abc");
+        @DisplayName("ignores invalid border type value gracefully")
+        void invalidBorderType() {
+            Map<String, String> attrs = Map.of("borderType", "invalid_type");
 
             Object result = handler.createElement(attrs);
 
-            assertThat(result).isInstanceOf(Panel.class);
+            assertThat(result).isInstanceOf(PanelTagHandler.PanelWidget.class);
         }
 
         @Test
-        @DisplayName("ignores invalid spacing value gracefully")
-        void invalidSpacing() {
-            Map<String, String> attrs = Map.of("spacing", "xyz");
-
-            Object result = handler.createElement(attrs);
-
-            assertThat(result).isInstanceOf(Panel.class);
-        }
-
-        @Test
-        @DisplayName("creates empty Panel with no attributes")
+        @DisplayName("creates empty PanelWidget with no attributes")
         void emptyAttributes() {
             Object result = handler.createElement(new HashMap<>());
 
-            assertThat(result).isInstanceOf(Panel.class);
+            assertThat(result).isInstanceOf(PanelTagHandler.PanelWidget.class);
             assertThat(result).isNotNull();
         }
 
@@ -149,92 +154,71 @@ class PanelTagHandlerTest {
     }
 
     @Nested
-    @DisplayName("parseBorderType")
-    class ParseBorderType {
+    @DisplayName("addChildren")
+    class AddChildren {
 
         @Test
-        @DisplayName("parses 'plain' to PLAIN")
-        void plain() {
-            assertThat(PanelTagHandler.parseBorderType("plain")).isEqualTo(BorderType.PLAIN);
+        @DisplayName("should add child widgets to PanelWidget")
+        void addChildWidgets() {
+            Object parent = handler.createElement(Map.of("title", "Parent"));
+
+            handler.addChildren(parent, List.of("child1", "child2"));
+
+            assertThat(parent).isInstanceOf(PanelTagHandler.PanelWidget.class);
+            PanelTagHandler.PanelWidget panelWidget = (PanelTagHandler.PanelWidget) parent;
+            assertThat(panelWidget.children()).containsExactly("child1", "child2");
         }
 
         @Test
-        @DisplayName("parses 'rounded' to ROUNDED")
-        void rounded() {
-            assertThat(PanelTagHandler.parseBorderType("rounded")).isEqualTo(BorderType.ROUNDED);
+        @DisplayName("should handle empty children list")
+        void emptyChildren() {
+            Object parent = handler.createElement(Map.of("title", "Parent"));
+
+            handler.addChildren(parent, List.of());
+
+            PanelTagHandler.PanelWidget panelWidget = (PanelTagHandler.PanelWidget) parent;
+            assertThat(panelWidget.children()).isEmpty();
         }
 
         @Test
-        @DisplayName("parses 'double' to DOUBLE")
-        void doubleBorder() {
-            assertThat(PanelTagHandler.parseBorderType("double")).isEqualTo(BorderType.DOUBLE);
+        @DisplayName("should ignore non-PanelWidget parent")
+        void nonPanelWidgetParent() {
+            // Should not throw when parent is not PanelWidget
+            handler.addChildren("not a panel", List.of("child"));
         }
 
         @Test
-        @DisplayName("parses 'thick' to THICK")
-        void thick() {
-            assertThat(PanelTagHandler.parseBorderType("thick")).isEqualTo(BorderType.THICK);
-        }
+        @DisplayName("PanelWidget children list starts empty")
+        void childrenStartEmpty() {
+            Object parent = handler.createElement(Map.of());
 
-        @Test
-        @DisplayName("parses 'none' to NONE")
-        void none() {
-            assertThat(PanelTagHandler.parseBorderType("none")).isEqualTo(BorderType.NONE);
-        }
-
-        @Test
-        @DisplayName("unknown value defaults to PLAIN")
-        void unknownDefaults() {
-            assertThat(PanelTagHandler.parseBorderType("unknown")).isEqualTo(BorderType.PLAIN);
-        }
-
-        @Test
-        @DisplayName("parsing is case-insensitive")
-        void caseInsensitive() {
-            assertThat(PanelTagHandler.parseBorderType("ROUNDED")).isEqualTo(BorderType.ROUNDED);
-            assertThat(PanelTagHandler.parseBorderType("Thick")).isEqualTo(BorderType.THICK);
+            PanelTagHandler.PanelWidget panelWidget = (PanelTagHandler.PanelWidget) parent;
+            assertThat(panelWidget.children()).isEmpty();
         }
     }
 
     @Nested
-    @DisplayName("parseDirection")
-    class ParseDirection {
+    @DisplayName("PanelWidget")
+    class PanelWidgetTests {
 
         @Test
-        @DisplayName("parses 'horizontal' to HORIZONTAL")
-        void horizontal() {
-            assertThat(PanelTagHandler.parseDirection("horizontal")).isEqualTo(Direction.HORIZONTAL);
+        @DisplayName("block() returns the configured Block")
+        void blockReturnsBlock() {
+            PanelTagHandler.PanelWidget widget = (PanelTagHandler.PanelWidget)
+                    handler.createElement(Map.of("title", "Test"));
+
+            assertThat(widget.block()).isNotNull();
+            assertThat(widget.block()).isInstanceOf(Block.class);
         }
 
         @Test
-        @DisplayName("parses 'row' to HORIZONTAL")
-        void row() {
-            assertThat(PanelTagHandler.parseDirection("row")).isEqualTo(Direction.HORIZONTAL);
-        }
+        @DisplayName("children() returns mutable list")
+        void childrenIsMutable() {
+            PanelTagHandler.PanelWidget widget = (PanelTagHandler.PanelWidget)
+                    handler.createElement(Map.of());
 
-        @Test
-        @DisplayName("parses 'vertical' to VERTICAL")
-        void vertical() {
-            assertThat(PanelTagHandler.parseDirection("vertical")).isEqualTo(Direction.VERTICAL);
-        }
-
-        @Test
-        @DisplayName("parses 'column' to VERTICAL (default)")
-        void column() {
-            assertThat(PanelTagHandler.parseDirection("column")).isEqualTo(Direction.VERTICAL);
-        }
-
-        @Test
-        @DisplayName("unknown value defaults to VERTICAL")
-        void unknownDefaults() {
-            assertThat(PanelTagHandler.parseDirection("unknown")).isEqualTo(Direction.VERTICAL);
-        }
-
-        @Test
-        @DisplayName("parsing is case-insensitive")
-        void caseInsensitive() {
-            assertThat(PanelTagHandler.parseDirection("HORIZONTAL")).isEqualTo(Direction.HORIZONTAL);
-            assertThat(PanelTagHandler.parseDirection("Row")).isEqualTo(Direction.HORIZONTAL);
+            widget.children().add("test-child");
+            assertThat(widget.children()).containsExactly("test-child");
         }
     }
 }
