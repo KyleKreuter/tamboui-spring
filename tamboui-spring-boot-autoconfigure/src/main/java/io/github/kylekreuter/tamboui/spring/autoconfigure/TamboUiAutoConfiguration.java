@@ -2,14 +2,19 @@ package io.github.kylekreuter.tamboui.spring.autoconfigure;
 
 import io.github.kylekreuter.tamboui.spring.core.NavigationRouter;
 import io.github.kylekreuter.tamboui.spring.core.TamboSpringApp;
+import io.github.kylekreuter.tamboui.spring.template.TagHandler;
 import io.github.kylekreuter.tamboui.spring.template.TemplateCache;
 import io.github.kylekreuter.tamboui.spring.template.TemplateEngine;
+import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.TextTagHandler;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+
+import java.util.List;
 
 /**
  * Auto-configuration for TamboUI Spring Boot integration.
@@ -29,8 +34,22 @@ public class TamboUiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public TemplateEngine templateEngine(TemplateCache templateCache, TamboUiProperties properties) {
-        return new TemplateEngine(templateCache, properties);
+    public PanelTagHandler panelTagHandler() {
+        return new PanelTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public TextTagHandler textTagHandler() {
+        return new TextTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public TemplateEngine templateEngine(TemplateCache templateCache,
+                                         TamboUiProperties properties,
+                                         List<TagHandler> tagHandlers) {
+        return new TemplateEngine(templateCache, properties, tagHandlers);
     }
 
     @Bean

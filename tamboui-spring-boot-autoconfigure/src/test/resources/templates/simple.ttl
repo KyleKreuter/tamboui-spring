@@ -1,0 +1,3 @@
+<t:panel title="Hello">
+  <t:text t:text="World" />
+</t:panel>

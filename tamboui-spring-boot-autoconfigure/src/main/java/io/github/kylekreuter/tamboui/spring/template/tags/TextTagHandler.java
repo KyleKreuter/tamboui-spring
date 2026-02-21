@@ -2,11 +2,18 @@ package io.github.kylekreuter.tamboui.spring.template.tags;
 
 import io.github.kylekreuter.tamboui.spring.template.TagHandler;
 
+import dev.tamboui.widgets.paragraph.Paragraph;
+
 import java.util.Map;
 
 /**
  * Tag handler for {@code <t:text>}.
- * Creates a TamboUI Text element with the resolved text content.
+ * Creates a TamboUI {@link Paragraph} widget with the resolved text content.
+ * <p>
+ * Supported attributes:
+ * <ul>
+ *   <li>{@code t:text} - The text content to display</li>
+ * </ul>
  */
 public class TextTagHandler implements TagHandler {
 
@@ -17,7 +24,10 @@ public class TextTagHandler implements TagHandler {
 
     @Override
     public Object createElement(Map<String, String> attributes) {
-        // TODO: Create TamboUI Text element from attributes (t:text content)
-        return null;
+        String text = attributes.get("t:text");
+        if (text == null) {
+            text = "";
+        }
+        return Paragraph.from(text);
     }
 }

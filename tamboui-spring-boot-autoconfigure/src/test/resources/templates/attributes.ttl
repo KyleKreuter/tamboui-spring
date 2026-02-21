@@ -1,0 +1,3 @@
+<t:panel title="Styled" borderType="ROUNDED" class="border-rounded">
+  <t:text t:text="content" class="text-green" />
+</t:panel>
