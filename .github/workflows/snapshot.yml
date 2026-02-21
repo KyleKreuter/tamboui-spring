@@ -3,8 +3,6 @@ name: Publish SNAPSHOT
 on:
   push:
     branches: [ main ]
-    tags-ignore:
-      - 'v*'
 
 jobs:
   snapshot:
