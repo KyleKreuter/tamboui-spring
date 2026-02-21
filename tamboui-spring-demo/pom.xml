@@ -14,6 +14,11 @@
     <name>TamboUI Spring Boot Demo</name>
     <description>Demo application for TamboUI Spring Boot.</description>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.install.skip>true</maven.install.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.github.kylekreuter</groupId>
