@@ -53,6 +53,16 @@ class KeyBindingParserTest {
             assertThat(binding.character()).isEqualTo('1');
             assertThat(binding.modifiers()).isEqualTo(KeyModifiers.NONE);
         }
+
+        @Test
+        @DisplayName("parse('A') should return CHAR binding with lowercase character 'a'")
+        void parseSingleUppercaseChar() {
+            ParsedBinding binding = KeyBindingParser.parse("A");
+
+            assertThat(binding.code()).isEqualTo(KeyCode.CHAR);
+            assertThat(binding.character()).isEqualTo('a');
+            assertThat(binding.modifiers()).isEqualTo(KeyModifiers.NONE);
+        }
     }
 
     @Nested
@@ -117,6 +127,40 @@ class KeyBindingParserTest {
             assertThat(binding.modifiers().ctrl()).isTrue();
             assertThat(binding.modifiers().alt()).isTrue();
             assertThat(binding.modifiers().shift()).isTrue();
+        }
+
+        @Test
+        @DisplayName("parse('alt+ctrl+c') should work regardless of modifier order")
+        void parseModifiersInDifferentOrder() {
+            ParsedBinding binding = KeyBindingParser.parse("alt+ctrl+c");
+
+            assertThat(binding.code()).isEqualTo(KeyCode.CHAR);
+            assertThat(binding.character()).isEqualTo('c');
+            assertThat(binding.modifiers().ctrl()).isTrue();
+            assertThat(binding.modifiers().alt()).isTrue();
+        }
+
+        @Test
+        @DisplayName("parse('shift+ctrl+alt+z') should work with reversed modifier order")
+        void parseReversedModifierOrder() {
+            ParsedBinding binding = KeyBindingParser.parse("shift+ctrl+alt+z");
+
+            assertThat(binding.code()).isEqualTo(KeyCode.CHAR);
+            assertThat(binding.character()).isEqualTo('z');
+            assertThat(binding.modifiers().ctrl()).isTrue();
+            assertThat(binding.modifiers().alt()).isTrue();
+            assertThat(binding.modifiers().shift()).isTrue();
+        }
+
+        @Test
+        @DisplayName("parse('alt+shift+enter') should return ENTER with alt+shift modifiers")
+        void parseModifierPlusSpecialKey() {
+            ParsedBinding binding = KeyBindingParser.parse("alt+shift+enter");
+
+            assertThat(binding.code()).isEqualTo(KeyCode.ENTER);
+            assertThat(binding.modifiers().alt()).isTrue();
+            assertThat(binding.modifiers().shift()).isTrue();
+            assertThat(binding.modifiers().ctrl()).isFalse();
         }
     }
 
@@ -268,6 +312,34 @@ class KeyBindingParserTest {
             assertThat(binding.code()).isEqualTo(KeyCode.F1);
             assertThat(binding.modifiers().ctrl()).isTrue();
         }
+
+        @Test
+        @DisplayName("parse('alt+tab') should return TAB with Alt modifier")
+        void parseAltTab() {
+            ParsedBinding binding = KeyBindingParser.parse("alt+tab");
+
+            assertThat(binding.code()).isEqualTo(KeyCode.TAB);
+            assertThat(binding.modifiers().alt()).isTrue();
+        }
+
+        @Test
+        @DisplayName("parse('ctrl+enter') should return ENTER with Ctrl modifier")
+        void parseCtrlEnter() {
+            ParsedBinding binding = KeyBindingParser.parse("ctrl+enter");
+
+            assertThat(binding.code()).isEqualTo(KeyCode.ENTER);
+            assertThat(binding.modifiers().ctrl()).isTrue();
+        }
+
+        @Test
+        @DisplayName("parse('ctrl+shift+delete') should return DELETE with Ctrl+Shift modifiers")
+        void parseCtrlShiftDelete() {
+            ParsedBinding binding = KeyBindingParser.parse("ctrl+shift+delete");
+
+            assertThat(binding.code()).isEqualTo(KeyCode.DELETE);
+            assertThat(binding.modifiers().ctrl()).isTrue();
+            assertThat(binding.modifiers().shift()).isTrue();
+        }
     }
 
     @Nested
@@ -288,6 +360,28 @@ class KeyBindingParserTest {
         @DisplayName("parse('ESC') should work case-insensitively")
         void parseUpperCaseSpecial() {
             assertThat(KeyBindingParser.parse("ESC").code()).isEqualTo(KeyCode.ESCAPE);
+        }
+
+        @Test
+        @DisplayName("parse('CTRL+C') should work when fully uppercase")
+        void parseFullyUpperCase() {
+            ParsedBinding binding = KeyBindingParser.parse("CTRL+C");
+
+            assertThat(binding.code()).isEqualTo(KeyCode.CHAR);
+            assertThat(binding.character()).isEqualTo('c');
+            assertThat(binding.modifiers().ctrl()).isTrue();
+        }
+
+        @Test
+        @DisplayName("parse('Enter') should work with mixed case")
+        void parseMixedCaseSpecialKey() {
+            assertThat(KeyBindingParser.parse("Enter").code()).isEqualTo(KeyCode.ENTER);
+        }
+
+        @Test
+        @DisplayName("parse('F1') should work when uppercase")
+        void parseUpperCaseFunctionKey() {
+            assertThat(KeyBindingParser.parse("F1").code()).isEqualTo(KeyCode.F1);
         }
     }
 
@@ -369,6 +463,39 @@ class KeyBindingParserTest {
         @DisplayName("parse('a+b') should throw IllegalArgumentException (multiple non-modifier keys)")
         void parseMultipleKeys() {
             assertThatThrownBy(() -> KeyBindingParser.parse("a+b"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("multiple non-modifier keys");
+        }
+
+        @Test
+        @DisplayName("parse('ctrl+') should throw IllegalArgumentException (trailing plus, only modifier)")
+        void parseTrailingPlus() {
+            // Java split discards trailing empty strings, so "ctrl+" becomes ["ctrl"]
+            assertThatThrownBy(() -> KeyBindingParser.parse("ctrl+"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("no key specified");
+        }
+
+        @Test
+        @DisplayName("parse('ctrl+alt') should throw IllegalArgumentException (only modifiers)")
+        void parseCtrlAltOnly() {
+            assertThatThrownBy(() -> KeyBindingParser.parse("ctrl+alt"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("no key specified");
+        }
+
+        @Test
+        @DisplayName("parse('ctrl+alt+shift') should throw IllegalArgumentException (three modifiers, no key)")
+        void parseTripleModifierOnly() {
+            assertThatThrownBy(() -> KeyBindingParser.parse("ctrl+alt+shift"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("no key specified");
+        }
+
+        @Test
+        @DisplayName("parse('esc+enter') should throw IllegalArgumentException (two special keys)")
+        void parseTwoSpecialKeys() {
+            assertThatThrownBy(() -> KeyBindingParser.parse("esc+enter"))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("multiple non-modifier keys");
         }
@@ -467,6 +594,76 @@ class KeyBindingParserTest {
             ParsedBinding binding = KeyBindingParser.parse("enter");
 
             assertThat(binding.matches(KeyEvent.ofChar('e'))).isFalse();
+        }
+
+        @Test
+        @DisplayName("'ctrl+alt+shift+z' binding should match event with all modifiers")
+        void allModifiersMatch() {
+            ParsedBinding binding = KeyBindingParser.parse("ctrl+alt+shift+z");
+            KeyEvent event = KeyEvent.ofChar('z', KeyModifiers.of(true, true, true));
+
+            assertThat(binding.matches(event)).isTrue();
+        }
+
+        @Test
+        @DisplayName("'ctrl+alt+shift+z' binding should not match event with only ctrl+alt")
+        void allModifiersNoMatchPartial() {
+            ParsedBinding binding = KeyBindingParser.parse("ctrl+alt+shift+z");
+            KeyEvent event = KeyEvent.ofChar('z', KeyModifiers.of(true, true, false));
+
+            assertThat(binding.matches(event)).isFalse();
+        }
+
+        @Test
+        @DisplayName("'ctrl+enter' binding should not match plain enter event")
+        void modifierSpecialKeyNoMatchWithoutModifier() {
+            ParsedBinding binding = KeyBindingParser.parse("ctrl+enter");
+            KeyEvent event = KeyEvent.ofKey(KeyCode.ENTER);
+
+            assertThat(binding.matches(event)).isFalse();
+        }
+
+        @Test
+        @DisplayName("'ctrl+enter' binding should match ctrl+enter event")
+        void modifierSpecialKeyMatch() {
+            ParsedBinding binding = KeyBindingParser.parse("ctrl+enter");
+            KeyEvent event = KeyEvent.ofKey(KeyCode.ENTER, KeyModifiers.CTRL);
+
+            assertThat(binding.matches(event)).isTrue();
+        }
+
+        @Test
+        @DisplayName("'f5' binding should match F5 key event")
+        void functionKeyMatch() {
+            ParsedBinding binding = KeyBindingParser.parse("f5");
+
+            assertThat(binding.matches(KeyEvent.ofKey(KeyCode.F5))).isTrue();
+        }
+
+        @Test
+        @DisplayName("'f5' binding should not match F6 key event")
+        void functionKeyNoMatch() {
+            ParsedBinding binding = KeyBindingParser.parse("f5");
+
+            assertThat(binding.matches(KeyEvent.ofKey(KeyCode.F6))).isFalse();
+        }
+
+        @Test
+        @DisplayName("'ctrl+c' binding should not match ctrl+x event")
+        void modifierCharDifferentChar() {
+            ParsedBinding binding = KeyBindingParser.parse("ctrl+c");
+            KeyEvent event = KeyEvent.ofChar('x', KeyModifiers.CTRL);
+
+            assertThat(binding.matches(event)).isFalse();
+        }
+
+        @Test
+        @DisplayName("'alt+x' binding should not match ctrl+x event (wrong modifier)")
+        void wrongModifierNoMatch() {
+            ParsedBinding binding = KeyBindingParser.parse("alt+x");
+            KeyEvent event = KeyEvent.ofChar('x', KeyModifiers.CTRL);
+
+            assertThat(binding.matches(event)).isFalse();
         }
     }
 }

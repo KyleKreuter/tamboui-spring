@@ -211,6 +211,98 @@ class OnKeyRegistrarTest {
     }
 
     @Test
+    @DisplayName("postProcessAfterInitialization should return the same bean instance")
+    void shouldReturnSameBeanInstance() {
+        SampleBean bean = new SampleBean();
+
+        Object result = registrar.postProcessAfterInitialization(bean, "sampleBean");
+
+        assertThat(result).isSameAs(bean);
+    }
+
+    @Test
+    @DisplayName("isRunning() should return false initially")
+    void isRunningFalseInitially() {
+        assertThat(registrar.isRunning()).isFalse();
+    }
+
+    @Test
+    @DisplayName("start() should do nothing when no bindings exist")
+    void startWithNoBindingsShouldDoNothing() {
+        registrar.start();
+
+        assertThat(registrar.isRunning()).isFalse();
+    }
+
+    @Test
+    @DisplayName("stop() should set running to false")
+    void stopShouldSetRunningToFalse() {
+        registrar.stop();
+
+        assertThat(registrar.isRunning()).isFalse();
+    }
+
+    @Test
+    @DisplayName("should discover bindings from multiple beans")
+    void shouldDiscoverBindingsFromMultipleBeans() {
+        SampleBean bean1 = new SampleBean();
+        CtrlCBean bean2 = new CtrlCBean();
+
+        registrar.postProcessAfterInitialization(bean1, "sampleBean");
+        registrar.postProcessAfterInitialization(bean2, "ctrlCBean");
+
+        assertThat(registrar.getBindings()).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("should handle multiple bindings dispatching to correct methods")
+    void shouldDispatchToCorrectMethodsWithMultipleBindings() {
+        SampleBean qBean = new SampleBean();
+        CtrlCBean ctrlCBean = new CtrlCBean();
+
+        registrar.postProcessAfterInitialization(qBean, "qBean");
+        registrar.postProcessAfterInitialization(ctrlCBean, "ctrlCBean");
+
+        ArgumentCaptor<GlobalEventHandler> captor = ArgumentCaptor.forClass(GlobalEventHandler.class);
+        registrar.registerHandlers(eventRouter);
+        // Two bindings -> two addGlobalHandler calls
+        verify(eventRouter, org.mockito.Mockito.times(2)).addGlobalHandler(captor.capture());
+
+        java.util.List<GlobalEventHandler> handlers = captor.getAllValues();
+
+        // Simulate 'q' key event -- first handler should match, second should not
+        KeyEvent qEvent = KeyEvent.ofChar('q');
+        EventResult result1 = handlers.get(0).handle(qEvent);
+        EventResult result2 = handlers.get(1).handle(qEvent);
+
+        assertThat(result1).isEqualTo(EventResult.HANDLED);
+        assertThat(result2).isEqualTo(EventResult.UNHANDLED);
+        assertThat(qBean.qPressed).isTrue();
+        assertThat(ctrlCBean.handled).isFalse();
+
+        // Simulate Ctrl+C event -- first handler should not match, second should
+        KeyEvent ctrlCEvent = KeyEvent.ofChar('c', KeyModifiers.CTRL);
+        EventResult result3 = handlers.get(0).handle(ctrlCEvent);
+        EventResult result4 = handlers.get(1).handle(ctrlCEvent);
+
+        assertThat(result3).isEqualTo(EventResult.UNHANDLED);
+        assertThat(result4).isEqualTo(EventResult.HANDLED);
+        assertThat(ctrlCBean.handled).isTrue();
+    }
+
+    @Test
+    @DisplayName("hasBindings() should return false initially")
+    void hasBindingsFalseInitially() {
+        assertThat(registrar.hasBindings()).isFalse();
+    }
+
+    @Test
+    @DisplayName("getBindings() should return empty list initially")
+    void getBindingsEmptyInitially() {
+        assertThat(registrar.getBindings()).isEmpty();
+    }
+
+    @Test
     @DisplayName("should handle modifier key bindings correctly")
     void shouldHandleModifierBindings() {
         CtrlCBean bean = new CtrlCBean();
