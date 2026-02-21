@@ -3,6 +3,7 @@ package io.github.kylekreuter.tamboui.spring.autoconfigure;
 import dev.tamboui.toolkit.app.ToolkitRunner;
 
 import io.github.kylekreuter.tamboui.spring.core.NavigationRouter;
+import io.github.kylekreuter.tamboui.spring.core.OnKeyRegistrar;
 import io.github.kylekreuter.tamboui.spring.core.TamboSpringApp;
 import io.github.kylekreuter.tamboui.spring.core.ToolkitRunnerFactory;
 import io.github.kylekreuter.tamboui.spring.template.TagHandler;
@@ -76,5 +77,11 @@ public class TamboUiAutoConfiguration {
     @ConditionalOnMissingBean
     public TamboSpringApp tamboSpringApp(ToolkitRunnerFactory toolkitRunnerFactory) {
         return new TamboSpringApp(toolkitRunnerFactory);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public OnKeyRegistrar onKeyRegistrar(TamboSpringApp tamboSpringApp) {
+        return new OnKeyRegistrar(tamboSpringApp);
     }
 }
