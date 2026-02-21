@@ -4,6 +4,7 @@ import dev.tamboui.toolkit.app.ToolkitRunner;
 
 import io.github.kylekreuter.tamboui.spring.core.NavigationRouter;
 import io.github.kylekreuter.tamboui.spring.core.OnKeyRegistrar;
+import io.github.kylekreuter.tamboui.spring.core.OnSubmitRegistrar;
 import io.github.kylekreuter.tamboui.spring.core.ScreenAutoDiscovery;
 import io.github.kylekreuter.tamboui.spring.core.TamboSpringApp;
 import io.github.kylekreuter.tamboui.spring.core.ToolkitRunnerFactory;
@@ -11,6 +12,8 @@ import io.github.kylekreuter.tamboui.spring.template.TagHandler;
 import io.github.kylekreuter.tamboui.spring.template.TemplateCache;
 import io.github.kylekreuter.tamboui.spring.template.TemplateEngine;
 import io.github.kylekreuter.tamboui.spring.template.tags.ColTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.FormTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.InputTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.ItemTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.ListTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler;
@@ -118,9 +121,27 @@ public class TamboUiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    public FormTagHandler formTagHandler() {
+        return new FormTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public InputTagHandler inputTagHandler() {
+        return new InputTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public ScreenAutoDiscovery screenAutoDiscovery(ApplicationContext applicationContext,
                                                     NavigationRouter navigationRouter,
                                                     TamboUiProperties properties) {
         return new ScreenAutoDiscovery(applicationContext, navigationRouter, properties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public OnSubmitRegistrar onSubmitRegistrar() {
+        return new OnSubmitRegistrar();
     }
 }
