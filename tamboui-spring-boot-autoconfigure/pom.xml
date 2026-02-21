@@ -26,6 +26,12 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- SLF4J (provided at runtime by spring-boot-starter-logging) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
         <!-- TamboUI (optional — activated via @ConditionalOnClass) -->
         <dependency>
             <groupId>dev.tamboui</groupId>
