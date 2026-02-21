@@ -7,8 +7,6 @@ Spring Boot integration for [TamboUI](https://github.com/tamboui/tamboui) — bu
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Java](https://img.shields.io/badge/Java-25%2B-blue)](https://openjdk.org/projects/jdk/25/)
 
-> **Pre-release** — API subject to change.
-
 ## Quick Start
 
 Add the starter to your `pom.xml`:
@@ -17,7 +15,7 @@ Add the starter to your `pom.xml`:
 <dependency>
     <groupId>io.github.kylekreuter</groupId>
     <artifactId>tamboui-spring-boot-starter</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
 </dependency>
 ```
 
