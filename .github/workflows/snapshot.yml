@@ -1,0 +1,32 @@
+name: Publish SNAPSHOT
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  snapshot:
+    name: Deploy SNAPSHOT to Sonatype
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'maven'
+          server-id: central
+          server-username: SONATYPE_USERNAME
+          server-password: SONATYPE_TOKEN
+
+      - name: Deploy SNAPSHOT
+        run: ./mvnw --no-transfer-progress --batch-mode clean deploy -Psnapshot -Dgpg.signer=bc
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_TOKEN: ${{ secrets.SONATYPE_TOKEN }}
+          MAVEN_GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
