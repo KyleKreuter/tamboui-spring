@@ -32,7 +32,7 @@ jobs:
         run: ./mvnw versions:set -DnewVersion=${{ steps.version.outputs.VERSION }} -DgenerateBackupPoms=false
 
       - name: Build and Deploy
-        run: ./mvnw --no-transfer-progress --batch-mode clean deploy -Prelease -Dgpg.signer=bc
+        run: ./mvnw --no-transfer-progress --batch-mode clean deploy -Prelease -Dgpg.signer=bc -pl '!tamboui-spring-demo'
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_TOKEN: ${{ secrets.SONATYPE_TOKEN }}

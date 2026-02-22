@@ -24,7 +24,7 @@ jobs:
           server-password: SONATYPE_TOKEN
 
       - name: Deploy SNAPSHOT
-        run: ./mvnw --no-transfer-progress --batch-mode clean deploy -Psnapshot -Dgpg.signer=bc
+        run: ./mvnw --no-transfer-progress --batch-mode clean deploy -Psnapshot -Dgpg.signer=bc -pl '!tamboui-spring-demo'
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_TOKEN: ${{ secrets.SONATYPE_TOKEN }}
