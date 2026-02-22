@@ -1,28 +1,20 @@
 <t:dock xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
         top-height="3" bottom-height="3">
 
-  <!-- Top: Tabs navigation (standalone, no extra Panel wrapper) -->
-  <t:tabs region="top" bind="navigationTabs" titles="Overview,Editor,Tree,Layout"
+  <!-- Top: Tabs navigation -->
+  <t:tabs region="top" bind="navigationTabs" titles="Overview,Editor,Forms"
           title="${title}" highlight-color="cyan"
           border-type="rounded" border-color="cyan" />
 
-  <!-- Center: Main content area with widget showcases -->
-  <t:grid region="center" grid-columns="2" grid-rows="3" gutter="1">
+  <!-- Center: Main content area -->
+  <t:grid region="center" grid-columns="2" grid-rows="1" gutter="1">
 
     <!-- TextArea widget -->
     <t:panel title="TextArea" class="border-rounded">
       <t:textarea bind="editorState" title="Code Editor"
-                  border-type="rounded" border-color="blue"
+                  border-type="rounded"
                   focused-border-color="cyan" show-line-numbers="true"
                   placeholder="Start typing..." />
-    </t:panel>
-
-    <!-- Tree widget -->
-    <t:panel title="Tree" class="border-rounded">
-      <t:tree bind="projectTree" title="Project Files"
-              border-type="rounded"
-              guide-style="unicode" highlight-color="yellow"
-              highlight-symbol=">> " indent-width="3" />
     </t:panel>
 
     <!-- FormField widgets -->
@@ -35,49 +27,6 @@
         <t:form-field label="Dark Mode" bind="darkModeToggle"
                       type="toggle"
                       border-type="rounded" border-color="dark-gray" />
-      </t:column>
-    </t:panel>
-
-    <!-- Dialog widget -->
-    <t:panel title="Dialog" class="border-rounded">
-      <t:dialog title="Confirm Action" border-type="rounded"
-                border-color="yellow" width="36" padding="1"
-                direction="vertical" spacing="1">
-        <t:text t:text="Do you want to proceed?" class="bold" />
-        <t:text t:text="[y] Yes  [n] No" class="text-cyan" />
-      </t:dialog>
-    </t:panel>
-
-    <!-- Columns layout widget -->
-    <t:panel title="Columns Layout" class="border-rounded">
-      <t:columns column-count="3" spacing="1" column-order="row-first">
-        <t:text t:text="Col A1" class="text-green" />
-        <t:text t:text="Col B1" class="text-yellow" />
-        <t:text t:text="Col C1" class="text-cyan" />
-        <t:text t:text="Col A2" class="text-green" />
-        <t:text t:text="Col B2" class="text-yellow" />
-        <t:text t:text="Col C2" class="text-cyan" />
-      </t:columns>
-    </t:panel>
-
-    <!-- Flow + Stack layout widgets -->
-    <t:panel title="Flow + Stack" class="border-rounded">
-      <t:column spacing="1">
-        <t:text t:text="Flow (tag cloud):" class="bold" />
-        <t:flow spacing="2" row-spacing="1">
-          <t:text t:text="${tag1}" class="text-cyan" />
-          <t:text t:text="${tag2}" class="text-green" />
-          <t:text t:text="${tag3}" class="text-yellow" />
-          <t:text t:text="${tag4}" class="text-magenta" />
-          <t:text t:text="${tag5}" class="text-blue" />
-          <t:text t:text="${tag6}" class="text-red" />
-          <t:text t:text="${tag7}" class="text-light-cyan" />
-        </t:flow>
-        <t:text t:text="Stack (overlay):" class="bold" />
-        <t:stack alignment="center">
-          <t:text t:text="Background Layer" class="dim" />
-          <t:text t:text="Foreground Layer" class="bold text-cyan" />
-        </t:stack>
       </t:column>
     </t:panel>
 

@@ -1,0 +1,10 @@
+<t:dock xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template">
+  <t:dialog region="center" title="Confirm Action"
+            border-type="rounded" border-color="yellow"
+            width="40" padding="1"
+            direction="vertical" spacing="1">
+    <t:text t:text="Do you want to proceed?" class="bold" />
+    <t:text t:text="[y] Yes  [n] No  [Esc] Back" class="text-cyan" />
+    <t:text t:text="Status: ${dialogStatus}" class="dim" />
+  </t:dialog>
+</t:dock>

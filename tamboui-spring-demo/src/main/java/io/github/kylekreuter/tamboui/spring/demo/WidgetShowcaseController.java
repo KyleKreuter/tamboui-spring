@@ -4,28 +4,23 @@ import dev.tamboui.widgets.form.BooleanFieldState;
 import dev.tamboui.widgets.input.TextAreaState;
 import dev.tamboui.widgets.input.TextInputState;
 import dev.tamboui.widgets.tabs.TabsState;
-import dev.tamboui.widgets.tree.TreeNode;
 import io.github.kylekreuter.tamboui.spring.annotation.BindState;
 import io.github.kylekreuter.tamboui.spring.annotation.OnKey;
 import io.github.kylekreuter.tamboui.spring.annotation.TamboScreen;
+import io.github.kylekreuter.tamboui.spring.core.NavigationRouter;
 import io.github.kylekreuter.tamboui.spring.core.ScreenController;
 import io.github.kylekreuter.tamboui.spring.core.TamboSpringApp;
 import io.github.kylekreuter.tamboui.spring.core.TemplateModel;
 
-import java.util.List;
-
 /**
- * Showcase screen demonstrating all 8 new widget types supported by the
- * {@link io.github.kylekreuter.tamboui.spring.core.WidgetToElementConverter}.
- * <p>
- * This screen provides a visual reference for Tabs, TextArea, Dialog, Tree,
- * FormField, Columns, Stack, and Flow widgets. Each widget is configured with
- * representative attributes and state bindings.
+ * Showcase screen demonstrating interactive widgets: Tabs, TextArea, and FormField.
+ * Press {@code d} to open the dialog screen.
  */
-@TamboScreen(template = "showcase")
+@TamboScreen(value = "showcase", template = "showcase")
 public class WidgetShowcaseController implements ScreenController {
 
     private final TamboSpringApp tamboSpringApp;
+    private final NavigationRouter navigationRouter;
 
     @BindState("navigationTabs")
     private final TabsState navigationTabs = new TabsState(0);
@@ -42,49 +37,31 @@ public class WidgetShowcaseController implements ScreenController {
     @BindState("darkModeToggle")
     private final BooleanFieldState darkModeToggle = new BooleanFieldState(true);
 
-    @BindState("projectTree")
-    private final List<TreeNode<String>> projectTree = List.of(
-        TreeNode.<String>of("src")
-            .add(TreeNode.<String>of("main")
-                .add(TreeNode.<String>of("java").leaf())
-                .add(TreeNode.<String>of("resources").leaf()))
-            .add(TreeNode.<String>of("test")
-                .add(TreeNode.<String>of("java").leaf())),
-        TreeNode.<String>of("docs")
-            .add(TreeNode.<String>of("architecture.md").leaf())
-            .add(TreeNode.<String>of("template-engine.md").leaf()),
-        TreeNode.<String>of("README.md").leaf(),
-        TreeNode.<String>of("build.gradle").leaf()
-    );
-
-    public WidgetShowcaseController(TamboSpringApp tamboSpringApp) {
+    public WidgetShowcaseController(TamboSpringApp tamboSpringApp,
+                                    NavigationRouter navigationRouter) {
         this.tamboSpringApp = tamboSpringApp;
+        this.navigationRouter = navigationRouter;
     }
 
     @Override
     public void populate(TemplateModel model) {
         model.put("title", "Widget Showcase")
-            .put("subtitle", "All 8 new widget types")
-            .put("footerHint", "TAB Focus  Ctrl+P/N Tabs  Ctrl+Q Quit");
-
-        // Flow widget labels
-        model.put("tag1", "Spring Boot")
-            .put("tag2", "TamboUI")
-            .put("tag3", "Java 17+")
-            .put("tag4", "Terminal UI")
-            .put("tag5", "Annotations")
-            .put("tag6", "Templates")
-            .put("tag7", "Reactive");
+            .put("footerHint", "TAB Focus  d Dialog  Ctrl+P/N Tabs  Ctrl+Q Quit");
     }
 
     @OnKey("ctrl+p")
     void previousTab() {
-        navigationTabs.selectPrevious(4);
+        navigationTabs.selectPrevious(3);
     }
 
     @OnKey("ctrl+n")
     void nextTab() {
-        navigationTabs.selectNext(4);
+        navigationTabs.selectNext(3);
+    }
+
+    @OnKey("d")
+    void openDialog() {
+        navigationRouter.navigateTo("dialogShowcase");
     }
 
     @OnKey("ctrl+q")
