@@ -56,14 +56,14 @@ public class WidgetShowcaseController implements ScreenController {
         // Tree data for the tree widget
         List<TreeNode<String>> projectTree = List.of(
                 TreeNode.<String>of("src")
-                        .child(TreeNode.<String>of("main")
-                                .child(TreeNode.<String>of("java").leaf())
-                                .child(TreeNode.<String>of("resources").leaf()))
-                        .child(TreeNode.<String>of("test")
-                                .child(TreeNode.<String>of("java").leaf())),
+                        .add(TreeNode.<String>of("main")
+                                .add(TreeNode.<String>of("java").leaf())
+                                .add(TreeNode.<String>of("resources").leaf()))
+                        .add(TreeNode.<String>of("test")
+                                .add(TreeNode.<String>of("java").leaf())),
                 TreeNode.<String>of("docs")
-                        .child(TreeNode.<String>of("architecture.md").leaf())
-                        .child(TreeNode.<String>of("template-engine.md").leaf()),
+                        .add(TreeNode.<String>of("architecture.md").leaf())
+                        .add(TreeNode.<String>of("template-engine.md").leaf()),
                 TreeNode.<String>of("README.md").leaf(),
                 TreeNode.<String>of("build.gradle").leaf()
         );
