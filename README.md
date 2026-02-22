@@ -285,6 +285,21 @@ tamboui.default-screen=dashboard                    # initial screen (optional)
 | `tamboui-spring-boot-starter` | Starter POM with default dependencies |
 | `tamboui-spring-demo` | Demo application |
 
+## Logging
+
+TamboUI renders directly in the terminal, so log output to `stdout`/`stderr` would corrupt the UI. Redirect logs to a file:
+
+```properties
+# application.properties
+logging.file.name=app.log
+```
+
+Then follow the logs in a separate terminal:
+
+```bash
+tail -f app.log
+```
+
 ## Prerequisites
 
 - Java 25+
