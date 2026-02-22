@@ -523,9 +523,7 @@ public class WidgetToElementConverter {
         if (bind != null) {
             Object state = stateBindings.get(bind);
             if (state instanceof SelectState ss) {
-                SelectFieldState selectFieldState = new SelectFieldState(
-                        ss.options(), ss.selectedIndex());
-                var element = Toolkit.formField("", selectFieldState);
+                var element = Toolkit.formField("", ss);
                 element.id("select-" + bind);
                 return element;
             } else if (state instanceof SelectFieldState sfs) {

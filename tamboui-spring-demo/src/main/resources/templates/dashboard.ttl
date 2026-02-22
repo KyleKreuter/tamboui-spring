@@ -4,7 +4,8 @@
   <t:panel region="top" title="${title}" class="border-rounded text-cyan">
     <t:row spacing="4">
       <t:text t:text="${date}  ${time}" class="bold" />
-      <t:text t:text="${languageLabel}: ◀ ${languageName} ▶" />
+      <t:text t:text="${languageLabel}:" />
+      <t:select bind="languageSelect" />
     </t:row>
   </t:panel>
 

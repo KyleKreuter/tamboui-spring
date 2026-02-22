@@ -2,6 +2,7 @@ package io.github.kylekreuter.tamboui.spring.autoconfigure;
 
 import dev.tamboui.toolkit.app.ToolkitRunner;
 
+import io.github.kylekreuter.tamboui.spring.core.BindStateRegistrar;
 import io.github.kylekreuter.tamboui.spring.core.NavigationRouter;
 import io.github.kylekreuter.tamboui.spring.core.OnKeyRegistrar;
 import io.github.kylekreuter.tamboui.spring.core.OnSubmitRegistrar;
@@ -155,10 +156,17 @@ public class TamboUiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    public BindStateRegistrar bindStateRegistrar() {
+        return new BindStateRegistrar();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public TamboSpringApp tamboSpringApp(ToolkitRunnerFactory toolkitRunnerFactory,
                                           NavigationRouter navigationRouter,
                                           TemplateEngine templateEngine,
-                                          WidgetToElementConverter converter) {
+                                          WidgetToElementConverter converter,
+                                          BindStateRegistrar bindStateRegistrar) {
         return new TamboSpringApp(toolkitRunnerFactory, () -> {
             // Read activeScreen once to avoid race conditions between
             // controller and template resolution during screen transitions
@@ -172,6 +180,7 @@ public class TamboUiAutoConfiguration {
                 return dev.tamboui.toolkit.Toolkit.text("No screen active");
             }
             TemplateModel model = new TemplateModel();
+            bindStateRegistrar.autoBindStates(controller, model);
             controller.populate(model);
             Object widget = templateEngine.render(templateName, model.asMap());
             if (widget == null) {

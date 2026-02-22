@@ -1,5 +1,8 @@
 package io.github.kylekreuter.tamboui.spring.demo;
 
+import dev.tamboui.widgets.select.SelectState;
+
+import io.github.kylekreuter.tamboui.spring.annotation.BindState;
 import io.github.kylekreuter.tamboui.spring.annotation.OnKey;
 import io.github.kylekreuter.tamboui.spring.annotation.TamboScreen;
 import io.github.kylekreuter.tamboui.spring.core.ScreenController;
@@ -12,7 +15,7 @@ import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
 
 @TamboScreen(template = "dashboard")
@@ -22,8 +25,10 @@ public class DashboardController implements ScreenController {
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     private final TamboSpringApp tamboSpringApp;
-    private final List<Language> languages = List.of(Language.values());
-    private int languageIndex = 0;
+
+    @BindState("languageSelect")
+    private final SelectState languageSelect = new SelectState(
+            Arrays.stream(Language.values()).map(Language::displayName).toArray(String[]::new));
 
     public DashboardController(TamboSpringApp tamboSpringApp) {
         this.tamboSpringApp = tamboSpringApp;
@@ -31,7 +36,7 @@ public class DashboardController implements ScreenController {
 
     @Override
     public void populate(TemplateModel model) {
-        Language lang = languages.get(languageIndex);
+        Language lang = Language.values()[languageSelect.selectedIndex()];
         Map<String, String> l = lang.labels();
         LocalDateTime now = LocalDateTime.now();
 
@@ -53,7 +58,6 @@ public class DashboardController implements ScreenController {
              .put("date", now.format(DATE_FMT))
              .put("time", now.format(TIME_FMT))
              .put("languageLabel", l.get("language"))
-             .put("languageName", lang.displayName())
              .put("osLabel", l.get("os"))
              .put("osValue", os.getName() + " " + os.getVersion())
              .put("archLabel", l.get("arch"))
@@ -71,16 +75,6 @@ public class DashboardController implements ScreenController {
              .put("vmLabel", l.get("vm"))
              .put("vmValue", rt.getVmName())
              .put("footerHint", l.get("footerHint"));
-    }
-
-    @OnKey("left")
-    void previousLanguage() {
-        languageIndex = (languageIndex - 1 + languages.size()) % languages.size();
-    }
-
-    @OnKey("right")
-    void nextLanguage() {
-        languageIndex = (languageIndex + 1) % languages.size();
     }
 
     @OnKey("ctrl+q")
