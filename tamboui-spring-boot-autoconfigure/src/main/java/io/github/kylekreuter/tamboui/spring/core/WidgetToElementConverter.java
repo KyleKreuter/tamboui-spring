@@ -11,8 +11,10 @@ import dev.tamboui.toolkit.elements.Row;
 import dev.tamboui.toolkit.elements.TextInputElement;
 import dev.tamboui.widget.Widget;
 import dev.tamboui.widgets.form.FormState;
+import dev.tamboui.widgets.form.SelectFieldState;
 import dev.tamboui.widgets.input.TextInputState;
 import dev.tamboui.widgets.list.ListItem;
+import dev.tamboui.widgets.select.SelectState;
 
 import io.github.kylekreuter.tamboui.spring.template.tags.ColumnTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.DockTagHandler;
@@ -20,6 +22,7 @@ import io.github.kylekreuter.tamboui.spring.template.tags.FormTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.GridTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.InputTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.ListTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.SelectTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.RowTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TableTagHandler;
@@ -29,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +47,10 @@ import java.util.Map;
  * into toolkit Elements. Only simple elements like Spacer may pass through directly.
  * <p>
  * When state bindings are provided via {@link #convert(Object, Map)}, the converter
- * connects {@code <t:input>} elements to their backing {@link TextInputState} from
- * the model. This enables interactive text input in forms and standalone inputs.
+ * connects {@code <t:input>} elements to their backing {@link TextInputState} and
+ * {@code <t:select>} elements to their backing {@link SelectState} or
+ * {@link SelectFieldState} from the model. This enables interactive text input
+ * and select widgets in forms and standalone usage.
  */
 public class WidgetToElementConverter {
 
@@ -140,6 +146,11 @@ public class WidgetToElementConverter {
         // Form wrapper → Column with converted children, establishing form context
         if (widget instanceof FormTagHandler.FormWidget formWidget) {
             return convertForm(formWidget, stateBindings);
+        }
+
+        // Select wrapper → FormFieldElement with select state binding
+        if (widget instanceof SelectTagHandler.SelectWidget selectWidget) {
+            return convertSelect(selectWidget, stateBindings, currentForm);
         }
 
         // Input wrapper → TextInputElement with state binding
@@ -473,6 +484,80 @@ public class WidgetToElementConverter {
         }
 
         return element;
+    }
+
+    /**
+     * Converts a select widget to a {@link dev.tamboui.toolkit.elements.FormFieldElement},
+     * connecting it to the appropriate {@link SelectFieldState} or {@link SelectState}.
+     * <p>
+     * Resolution order:
+     * <ol>
+     *   <li>If the select has a {@code field} attribute and a parent form context exists,
+     *       the {@link SelectFieldState} is retrieved from the {@link FormState} and
+     *       wrapped with {@link Toolkit#formField(String, SelectFieldState)}</li>
+     *   <li>If the select has a {@code bind} attribute, the {@link SelectState}
+     *       is looked up directly from the state bindings and converted to a
+     *       {@link SelectFieldState}</li>
+     *   <li>If the select has an {@code options} attribute, a new {@link SelectState}
+     *       is created from the comma-separated values</li>
+     *   <li>Otherwise, a text placeholder is returned</li>
+     * </ol>
+     */
+    private Element convertSelect(SelectTagHandler.SelectWidget selectWidget,
+                                  Map<String, Object> stateBindings, FormState currentForm) {
+        // Form field mode: get SelectFieldState from enclosing FormState
+        String field = selectWidget.field();
+        if (field != null && currentForm != null) {
+            try {
+                SelectFieldState selectFieldState = currentForm.selectField(field);
+                var element = Toolkit.formField(field, selectFieldState);
+                element.id("select-" + field);
+                return element;
+            } catch (IllegalArgumentException e) {
+                log.warn("No select field '{}' in FormState", field);
+            }
+        }
+
+        // Standalone mode: get SelectState directly from state bindings
+        String bind = selectWidget.bind();
+        if (bind != null) {
+            Object state = stateBindings.get(bind);
+            if (state instanceof SelectState ss) {
+                SelectFieldState selectFieldState = new SelectFieldState(
+                        ss.options(), ss.selectedIndex());
+                var element = Toolkit.formField("", selectFieldState);
+                element.id("select-" + bind);
+                return element;
+            } else if (state instanceof SelectFieldState sfs) {
+                var element = Toolkit.formField("", sfs);
+                element.id("select-" + bind);
+                return element;
+            } else if (state != null) {
+                log.warn("State binding '{}' is not a SelectState but {}",
+                         bind, state.getClass().getSimpleName());
+            }
+        }
+
+        // Fallback: create SelectState from comma-separated options attribute
+        String options = selectWidget.options();
+        if (options != null && !options.isBlank()) {
+            String[] optionValues = options.split(",");
+            for (int i = 0; i < optionValues.length; i++) {
+                optionValues[i] = optionValues[i].trim();
+            }
+            SelectFieldState selectFieldState = new SelectFieldState(
+                    Arrays.asList(optionValues));
+            var element = Toolkit.formField("", selectFieldState);
+            if (bind != null) {
+                element.id("select-" + bind);
+            } else if (field != null) {
+                element.id("select-" + field);
+            }
+            return element;
+        }
+
+        log.warn("Select widget has no field, bind, or options attribute — rendering placeholder");
+        return Toolkit.text("<select>");
     }
 
     /**
