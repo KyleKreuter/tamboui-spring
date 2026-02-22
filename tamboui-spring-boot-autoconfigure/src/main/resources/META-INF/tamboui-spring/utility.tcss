@@ -583,10 +583,6 @@
  * Focus: element-type :focus selectors
  * ---------------------------------------------------------------------------- */
 
-TreeElement {
-    border-color: green;
-}
-
 TreeElement:focus {
     border-color: cyan;
 }
