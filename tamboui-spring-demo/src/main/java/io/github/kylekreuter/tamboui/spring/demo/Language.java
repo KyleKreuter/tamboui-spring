@@ -4,7 +4,7 @@ import java.util.Map;
 
 public enum Language {
 
-    DE("Deutsch", Map.ofEntries(
+    DE("DE", Map.ofEntries(
             Map.entry("title", "System-Monitor"),
             Map.entry("language", "Sprache"),
             Map.entry("os", "Betriebssystem"),
@@ -18,7 +18,21 @@ public enum Language {
             Map.entry("footerHint", "\u25C0 \u25B6 Sprache wechseln  |  Ctrl+Q Beenden")
     )),
 
-    EN("English", Map.ofEntries(
+    IT("IT", Map.ofEntries(
+        Map.entry("title", "Monitor di Sistema"),
+        Map.entry("language", "Lingua"),
+        Map.entry("os", "Sistema Operativo"),
+        Map.entry("arch", "Architettura"),
+        Map.entry("processors", "Processori"),
+        Map.entry("cpuLoad", "Carico CPU"),
+        Map.entry("memory", "Memoria (Heap)"),
+        Map.entry("uptime", "Tempo di attività"),
+        Map.entry("java", "Versione Java"),
+        Map.entry("vm", "VM"),
+        Map.entry("footerHint", "\u25C0 \u25B6 Cambia lingua  |  Ctrl+Q Esci")
+    )),
+
+    EN("EN", Map.ofEntries(
             Map.entry("title", "System Monitor"),
             Map.entry("language", "Language"),
             Map.entry("os", "Operating System"),
