@@ -3,29 +3,51 @@ package io.github.kylekreuter.tamboui.spring.core;
 import dev.tamboui.toolkit.Toolkit;
 import dev.tamboui.toolkit.element.Element;
 import dev.tamboui.toolkit.elements.Column;
+import dev.tamboui.toolkit.elements.ColumnsElement;
+import dev.tamboui.toolkit.elements.DialogElement;
 import dev.tamboui.toolkit.elements.DockElement;
+import dev.tamboui.toolkit.elements.FlowElement;
+import dev.tamboui.toolkit.elements.FormFieldElement;
 import dev.tamboui.toolkit.elements.GenericWidgetElement;
 import dev.tamboui.toolkit.elements.GridElement;
 import dev.tamboui.toolkit.elements.ListElement;
 import dev.tamboui.toolkit.elements.Panel;
+import dev.tamboui.toolkit.elements.StackElement;
+import dev.tamboui.toolkit.elements.TabsElement;
 import dev.tamboui.toolkit.elements.TableElement;
+import dev.tamboui.toolkit.elements.TextAreaElement;
 import dev.tamboui.toolkit.elements.TextElement;
 import dev.tamboui.toolkit.elements.TextInputElement;
+import dev.tamboui.toolkit.elements.TreeElement;
+import dev.tamboui.widgets.form.BooleanFieldState;
 import dev.tamboui.widgets.form.FormState;
+import dev.tamboui.widgets.form.SelectFieldState;
+import dev.tamboui.widgets.input.TextAreaState;
 import dev.tamboui.widgets.input.TextInputState;
 import dev.tamboui.widgets.list.ListItem;
 import dev.tamboui.widgets.paragraph.Paragraph;
+import dev.tamboui.widgets.select.SelectState;
 import dev.tamboui.widgets.table.Cell;
 import dev.tamboui.widgets.table.Row;
+import dev.tamboui.widgets.tabs.TabsState;
+import dev.tamboui.widgets.tree.TreeNode;
 
 import io.github.kylekreuter.tamboui.spring.template.tags.ColTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.ColumnsTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.DialogTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.DockTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.FlowTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.FormFieldTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.FormTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.GridTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.InputTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.ListTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.StackTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.TabsTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TableTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.TextAreaTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.TreeTagHandler;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -890,6 +912,577 @@ class WidgetToElementConverterTest {
             Element result = converter.convert(42);
 
             assertInstanceOf(TextElement.class, result);
+        }
+    }
+
+    // ========== Tests for 8 new widget types ==========
+
+    @Nested
+    @DisplayName("TabsWidget conversion")
+    class TabsWidgetConversion {
+
+        @Test
+        @DisplayName("TabsWidget should convert to TabsElement")
+        void tabsShouldConvert() {
+            var handler = new TabsTagHandler();
+            var widget = handler.createElement(Map.of("titles", "Home,Settings"));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(TabsElement.class, result);
+        }
+
+        @Test
+        @DisplayName("TabsWidget with state binding should convert to TabsElement")
+        void tabsWithStateShouldConvert() {
+            var handler = new TabsTagHandler();
+            var widget = handler.createElement(Map.of("titles", "A,B,C", "bind", "tabsState"));
+            TabsState state = new TabsState(1);
+
+            Element result = converter.convert(widget, Map.of("tabsState", state));
+
+            assertInstanceOf(TabsElement.class, result);
+        }
+
+        @Test
+        @DisplayName("TabsWidget with empty attributes should convert to TabsElement")
+        void tabsWithEmptyAttrsShouldConvert() {
+            var handler = new TabsTagHandler();
+            var widget = handler.createElement(Collections.emptyMap());
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(TabsElement.class, result);
+        }
+
+        @Test
+        @DisplayName("TabsWidget with all styling attributes should convert")
+        void tabsWithAllStylingShouldConvert() {
+            var handler = new TabsTagHandler();
+            var widget = handler.createElement(Map.of(
+                    "titles", "Tab1,Tab2",
+                    "divider", " - ",
+                    "highlight-color", "YELLOW",
+                    "padding-left", "  ",
+                    "padding-right", "  ",
+                    "title", "Navigation",
+                    "border-type", "rounded",
+                    "border-color", "cyan"
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(TabsElement.class, result);
+        }
+    }
+
+    @Nested
+    @DisplayName("TextAreaWidget conversion")
+    class TextAreaWidgetConversion {
+
+        @Test
+        @DisplayName("TextAreaWidget should convert to TextAreaElement")
+        void textAreaShouldConvert() {
+            var handler = new TextAreaTagHandler();
+            var widget = handler.createElement(Map.of("placeholder", "Enter text..."));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(TextAreaElement.class, result);
+        }
+
+        @Test
+        @DisplayName("TextAreaWidget with state binding should convert")
+        void textAreaWithStateShouldConvert() {
+            var handler = new TextAreaTagHandler();
+            var widget = handler.createElement(Map.of("bind", "editorState"));
+            TextAreaState state = new TextAreaState("Hello");
+
+            Element result = converter.convert(widget, Map.of("editorState", state));
+
+            assertInstanceOf(TextAreaElement.class, result);
+        }
+
+        @Test
+        @DisplayName("TextAreaWidget with all styling attributes should convert")
+        void textAreaWithAllStylingShouldConvert() {
+            var handler = new TextAreaTagHandler();
+            var widget = handler.createElement(Map.of(
+                    "bind", "editor",
+                    "placeholder", "Type here...",
+                    "title", "Editor",
+                    "border-type", "rounded",
+                    "border-color", "blue",
+                    "focused-border-color", "cyan",
+                    "show-line-numbers", "true"
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(TextAreaElement.class, result);
+        }
+
+        @Test
+        @DisplayName("TextAreaWidget with empty attributes should convert")
+        void textAreaWithEmptyAttrsShouldConvert() {
+            var handler = new TextAreaTagHandler();
+            var widget = handler.createElement(Collections.emptyMap());
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(TextAreaElement.class, result);
+        }
+    }
+
+    @Nested
+    @DisplayName("DialogWidget conversion")
+    class DialogWidgetConversion {
+
+        @Test
+        @DisplayName("DialogWidget should convert to DialogElement")
+        void dialogShouldConvert() {
+            var handler = new DialogTagHandler();
+            var widget = (DialogTagHandler.DialogWidget) handler.createElement(
+                    Map.of("title", "Confirm"));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(DialogElement.class, result);
+        }
+
+        @Test
+        @DisplayName("DialogWidget with children should recursively convert")
+        void dialogWithChildrenShouldConvert() {
+            var handler = new DialogTagHandler();
+            var widget = (DialogTagHandler.DialogWidget) handler.createElement(
+                    Map.of("title", "Delete?", "border-type", "rounded"));
+            handler.addChildren(widget, List.of(
+                    Toolkit.text("Are you sure?"),
+                    Toolkit.text("[y] Yes  [n] No")
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(DialogElement.class, result);
+        }
+
+        @Test
+        @DisplayName("DialogWidget with dimensions should convert")
+        void dialogWithDimensionsShouldConvert() {
+            var handler = new DialogTagHandler();
+            var widget = (DialogTagHandler.DialogWidget) handler.createElement(Map.of(
+                    "title", "Info",
+                    "width", "40",
+                    "height", "10",
+                    "min-width", "30",
+                    "padding", "2",
+                    "direction", "vertical",
+                    "spacing", "1"
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(DialogElement.class, result);
+        }
+
+        @Test
+        @DisplayName("DialogWidget with invalid numeric values should handle gracefully")
+        void dialogWithInvalidNumericsShouldHandleGracefully() {
+            var handler = new DialogTagHandler();
+            var widget = (DialogTagHandler.DialogWidget) handler.createElement(Map.of(
+                    "width", "abc",
+                    "height", "xyz",
+                    "spacing", "not-a-number"
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(DialogElement.class, result);
+        }
+
+        @Test
+        @DisplayName("DialogWidget with empty attributes should convert")
+        void dialogWithEmptyAttrsShouldConvert() {
+            var handler = new DialogTagHandler();
+            var widget = (DialogTagHandler.DialogWidget) handler.createElement(Collections.emptyMap());
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(DialogElement.class, result);
+        }
+    }
+
+    @Nested
+    @DisplayName("TreeWidget conversion")
+    class TreeWidgetConversion {
+
+        @Test
+        @DisplayName("TreeWidget should convert to TreeElement")
+        void treeShouldConvert() {
+            var handler = new TreeTagHandler();
+            var widget = handler.createElement(Map.of("title", "Files"));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(TreeElement.class, result);
+        }
+
+        @Test
+        @DisplayName("TreeWidget with bound root nodes should convert")
+        void treeWithBoundRootsShouldConvert() {
+            var handler = new TreeTagHandler();
+            var widget = handler.createElement(Map.of("bind", "fileTree"));
+            List<TreeNode<String>> roots = List.of(
+                    TreeNode.of("src"),
+                    TreeNode.of("README.md").leaf()
+            );
+
+            Element result = converter.convert(widget, Map.of("fileTree", roots));
+
+            assertInstanceOf(TreeElement.class, result);
+        }
+
+        @Test
+        @DisplayName("TreeWidget with all styling attributes should convert")
+        void treeWithAllStylingShouldConvert() {
+            var handler = new TreeTagHandler();
+            var widget = handler.createElement(Map.of(
+                    "title", "Project",
+                    "border-type", "rounded",
+                    "border-color", "cyan",
+                    "guide-style", "unicode",
+                    "highlight-color", "yellow",
+                    "highlight-symbol", ">> ",
+                    "scrollbar-policy", "always",
+                    "indent-width", "4"
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(TreeElement.class, result);
+        }
+
+        @Test
+        @DisplayName("TreeWidget with empty attributes should convert")
+        void treeWithEmptyAttrsShouldConvert() {
+            var handler = new TreeTagHandler();
+            var widget = handler.createElement(Collections.emptyMap());
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(TreeElement.class, result);
+        }
+    }
+
+    @Nested
+    @DisplayName("FormFieldWidget conversion")
+    class FormFieldWidgetConversion {
+
+        @Test
+        @DisplayName("FormFieldWidget should convert to FormFieldElement")
+        void formFieldShouldConvert() {
+            var handler = new FormFieldTagHandler();
+            var widget = handler.createElement(Map.of("label", "Username"));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(FormFieldElement.class, result);
+        }
+
+        @Test
+        @DisplayName("FormFieldWidget with standalone text binding should convert")
+        void formFieldWithTextBindingShouldConvert() {
+            var handler = new FormFieldTagHandler();
+            var widget = handler.createElement(Map.of(
+                    "label", "Search",
+                    "bind", "searchInput",
+                    "placeholder", "Type to search..."
+            ));
+            TextInputState state = new TextInputState();
+
+            Element result = converter.convert(widget, Map.of("searchInput", state));
+
+            assertInstanceOf(FormFieldElement.class, result);
+        }
+
+        @Test
+        @DisplayName("FormFieldWidget with form field binding should convert")
+        void formFieldWithFormBindingShouldConvert() {
+            FormState formState = FormState.builder()
+                    .textField("username", "alice")
+                    .build();
+
+            var formWidget = new FormTagHandler.FormWidget("myForm");
+            var handler = new FormFieldTagHandler();
+            var fieldWidget = handler.createElement(Map.of(
+                    "label", "Username",
+                    "field", "username"
+            ));
+            formWidget.children().add(fieldWidget);
+
+            Element result = converter.convert(formWidget, Map.of("myForm", formState));
+
+            assertInstanceOf(Column.class, result);
+        }
+
+        @Test
+        @DisplayName("FormFieldWidget with boolean binding should convert")
+        void formFieldWithBooleanBindingShouldConvert() {
+            var handler = new FormFieldTagHandler();
+            var widget = handler.createElement(Map.of(
+                    "label", "Active",
+                    "bind", "activeState",
+                    "type", "toggle"
+            ));
+            BooleanFieldState state = new BooleanFieldState(true);
+
+            Element result = converter.convert(widget, Map.of("activeState", state));
+
+            assertInstanceOf(FormFieldElement.class, result);
+        }
+
+        @Test
+        @DisplayName("FormFieldWidget with all styling attributes should convert")
+        void formFieldWithAllStylingShouldConvert() {
+            var handler = new FormFieldTagHandler();
+            var widget = handler.createElement(Map.of(
+                    "label", "Name",
+                    "label-width", "20",
+                    "placeholder", "Enter name",
+                    "border-type", "rounded",
+                    "border-color", "dark-gray",
+                    "focused-border-color", "cyan"
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(FormFieldElement.class, result);
+        }
+
+        @Test
+        @DisplayName("FormFieldWidget with empty attributes should convert")
+        void formFieldWithEmptyAttrsShouldConvert() {
+            var handler = new FormFieldTagHandler();
+            var widget = handler.createElement(Collections.emptyMap());
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(FormFieldElement.class, result);
+        }
+    }
+
+    @Nested
+    @DisplayName("ColumnsWidget conversion")
+    class ColumnsWidgetConversion {
+
+        @Test
+        @DisplayName("ColumnsWidget should convert to ColumnsElement")
+        void columnsShouldConvert() {
+            var handler = new ColumnsTagHandler();
+            var widget = (ColumnsTagHandler.ColumnsWidget) handler.createElement(
+                    Map.of("column-count", "3"));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(ColumnsElement.class, result);
+        }
+
+        @Test
+        @DisplayName("ColumnsWidget with children should recursively convert")
+        void columnsWithChildrenShouldConvert() {
+            var handler = new ColumnsTagHandler();
+            var widget = (ColumnsTagHandler.ColumnsWidget) handler.createElement(
+                    Map.of("column-count", "2", "spacing", "1"));
+            handler.addChildren(widget, List.of(
+                    Toolkit.text("A"),
+                    Toolkit.text("B"),
+                    Toolkit.text("C"),
+                    Toolkit.text("D")
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(ColumnsElement.class, result);
+        }
+
+        @Test
+        @DisplayName("ColumnsWidget with all attributes should convert")
+        void columnsWithAllAttrsShouldConvert() {
+            var handler = new ColumnsTagHandler();
+            var widget = (ColumnsTagHandler.ColumnsWidget) handler.createElement(Map.of(
+                    "spacing", "2",
+                    "flex", "CENTER",
+                    "margin", "1",
+                    "column-count", "3",
+                    "column-order", "column-first",
+                    "class", "my-columns",
+                    "id", "cols1"
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(ColumnsElement.class, result);
+        }
+
+        @Test
+        @DisplayName("ColumnsWidget with empty attributes should convert")
+        void columnsWithEmptyAttrsShouldConvert() {
+            var handler = new ColumnsTagHandler();
+            var widget = (ColumnsTagHandler.ColumnsWidget) handler.createElement(Collections.emptyMap());
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(ColumnsElement.class, result);
+        }
+
+        @Test
+        @DisplayName("ColumnsWidget with invalid numeric values should handle gracefully")
+        void columnsWithInvalidNumericsShouldHandleGracefully() {
+            var handler = new ColumnsTagHandler();
+            var widget = (ColumnsTagHandler.ColumnsWidget) handler.createElement(Map.of(
+                    "spacing", "abc",
+                    "column-count", "xyz"
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(ColumnsElement.class, result);
+        }
+    }
+
+    @Nested
+    @DisplayName("StackWidget conversion")
+    class StackWidgetConversion {
+
+        @Test
+        @DisplayName("StackWidget should convert to StackElement")
+        void stackShouldConvert() {
+            var handler = new StackTagHandler();
+            var widget = (StackTagHandler.StackWidget) handler.createElement(
+                    Map.of("alignment", "center"));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(StackElement.class, result);
+        }
+
+        @Test
+        @DisplayName("StackWidget with children should recursively convert")
+        void stackWithChildrenShouldConvert() {
+            var handler = new StackTagHandler();
+            var widget = (StackTagHandler.StackWidget) handler.createElement(
+                    Map.of("alignment", "stretch"));
+            handler.addChildren(widget, List.of(
+                    Toolkit.text("Background"),
+                    Toolkit.text("Foreground")
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(StackElement.class, result);
+        }
+
+        @Test
+        @DisplayName("StackWidget with all attributes should convert")
+        void stackWithAllAttrsShouldConvert() {
+            var handler = new StackTagHandler();
+            var widget = (StackTagHandler.StackWidget) handler.createElement(Map.of(
+                    "alignment", "top-left",
+                    "margin", "2",
+                    "class", "overlay",
+                    "id", "stack1"
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(StackElement.class, result);
+        }
+
+        @Test
+        @DisplayName("StackWidget with empty attributes should convert")
+        void stackWithEmptyAttrsShouldConvert() {
+            var handler = new StackTagHandler();
+            var widget = (StackTagHandler.StackWidget) handler.createElement(Collections.emptyMap());
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(StackElement.class, result);
+        }
+    }
+
+    @Nested
+    @DisplayName("FlowWidget conversion")
+    class FlowWidgetConversion {
+
+        @Test
+        @DisplayName("FlowWidget should convert to FlowElement")
+        void flowShouldConvert() {
+            var handler = new FlowTagHandler();
+            var widget = (FlowTagHandler.FlowWidget) handler.createElement(
+                    Map.of("spacing", "2"));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(FlowElement.class, result);
+        }
+
+        @Test
+        @DisplayName("FlowWidget with children should recursively convert")
+        void flowWithChildrenShouldConvert() {
+            var handler = new FlowTagHandler();
+            var widget = (FlowTagHandler.FlowWidget) handler.createElement(
+                    Map.of("spacing", "1", "row-spacing", "1"));
+            handler.addChildren(widget, List.of(
+                    Toolkit.text("Tag1"),
+                    Toolkit.text("Tag2"),
+                    Toolkit.text("Tag3")
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(FlowElement.class, result);
+        }
+
+        @Test
+        @DisplayName("FlowWidget with all attributes should convert")
+        void flowWithAllAttrsShouldConvert() {
+            var handler = new FlowTagHandler();
+            var widget = (FlowTagHandler.FlowWidget) handler.createElement(Map.of(
+                    "spacing", "2",
+                    "row-spacing", "1",
+                    "margin", "1",
+                    "class", "tags",
+                    "id", "flow1"
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(FlowElement.class, result);
+        }
+
+        @Test
+        @DisplayName("FlowWidget with empty attributes should convert")
+        void flowWithEmptyAttrsShouldConvert() {
+            var handler = new FlowTagHandler();
+            var widget = (FlowTagHandler.FlowWidget) handler.createElement(Collections.emptyMap());
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(FlowElement.class, result);
+        }
+
+        @Test
+        @DisplayName("FlowWidget with invalid numeric values should handle gracefully")
+        void flowWithInvalidNumericsShouldHandleGracefully() {
+            var handler = new FlowTagHandler();
+            var widget = (FlowTagHandler.FlowWidget) handler.createElement(Map.of(
+                    "spacing", "abc",
+                    "row-spacing", "xyz"
+            ));
+
+            Element result = converter.convert(widget);
+
+            assertInstanceOf(FlowElement.class, result);
         }
     }
 }

@@ -1,23 +1,49 @@
 package io.github.kylekreuter.tamboui.spring.core;
 
 import dev.tamboui.layout.Constraint;
+import dev.tamboui.layout.ContentAlignment;
+import dev.tamboui.layout.Direction;
 import dev.tamboui.layout.Flex;
+import dev.tamboui.layout.Margin;
+import dev.tamboui.layout.columns.ColumnOrder;
+import dev.tamboui.style.Color;
 import dev.tamboui.toolkit.Toolkit;
 import dev.tamboui.toolkit.element.Element;
 import dev.tamboui.toolkit.elements.Column;
+import dev.tamboui.toolkit.elements.ColumnsElement;
+import dev.tamboui.toolkit.elements.DialogElement;
 import dev.tamboui.toolkit.elements.DockElement;
+import dev.tamboui.toolkit.elements.FlowElement;
+import dev.tamboui.toolkit.elements.FormFieldElement;
 import dev.tamboui.toolkit.elements.GridElement;
 import dev.tamboui.toolkit.elements.Row;
+import dev.tamboui.toolkit.elements.StackElement;
+import dev.tamboui.toolkit.elements.TabsElement;
+import dev.tamboui.toolkit.elements.TextAreaElement;
 import dev.tamboui.toolkit.elements.TextInputElement;
+import dev.tamboui.toolkit.elements.TreeElement;
 import dev.tamboui.widget.Widget;
+import dev.tamboui.widgets.block.BorderType;
+import dev.tamboui.widgets.common.ScrollBarPolicy;
+import dev.tamboui.widgets.form.BooleanFieldState;
+import dev.tamboui.widgets.form.FieldType;
 import dev.tamboui.widgets.form.FormState;
 import dev.tamboui.widgets.form.SelectFieldState;
+import dev.tamboui.widgets.input.TextAreaState;
 import dev.tamboui.widgets.input.TextInputState;
 import dev.tamboui.widgets.list.ListItem;
 import dev.tamboui.widgets.select.SelectState;
+import dev.tamboui.widgets.tabs.TabsState;
+import dev.tamboui.widgets.tree.GuideStyle;
+import dev.tamboui.widgets.tree.TreeNode;
+import dev.tamboui.widgets.tree.TreeState;
 
 import io.github.kylekreuter.tamboui.spring.template.tags.ColumnTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.ColumnsTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.DialogTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.DockTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.FlowTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.FormFieldTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.FormTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.GridTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.InputTagHandler;
@@ -25,8 +51,12 @@ import io.github.kylekreuter.tamboui.spring.template.tags.ListTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.SelectTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.RowTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.StackTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.TabsTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TableTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.TextAreaTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TextTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.TreeTagHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,6 +191,46 @@ public class WidgetToElementConverter {
         // Text wrapper with CSS classes → styled text element
         if (widget instanceof TextTagHandler.TextWidget textWidget) {
             return convertText(textWidget);
+        }
+
+        // Tabs wrapper → TabsElement
+        if (widget instanceof TabsTagHandler.TabsWidget tabsWidget) {
+            return convertTabs(tabsWidget, stateBindings);
+        }
+
+        // TextArea wrapper → TextAreaElement
+        if (widget instanceof TextAreaTagHandler.TextAreaWidget textAreaWidget) {
+            return convertTextArea(textAreaWidget, stateBindings);
+        }
+
+        // Dialog wrapper → DialogElement (container)
+        if (widget instanceof DialogTagHandler.DialogWidget dialogWidget) {
+            return convertDialog(dialogWidget, stateBindings, currentForm);
+        }
+
+        // Tree wrapper → TreeElement
+        if (widget instanceof TreeTagHandler.TreeWidget treeWidget) {
+            return convertTree(treeWidget, stateBindings);
+        }
+
+        // FormField wrapper → FormFieldElement
+        if (widget instanceof FormFieldTagHandler.FormFieldWidget formFieldWidget) {
+            return convertFormField(formFieldWidget, stateBindings, currentForm);
+        }
+
+        // Columns wrapper → ColumnsElement (container)
+        if (widget instanceof ColumnsTagHandler.ColumnsWidget columnsWidget) {
+            return convertColumns(columnsWidget, stateBindings, currentForm);
+        }
+
+        // Stack wrapper → StackElement (container)
+        if (widget instanceof StackTagHandler.StackWidget stackWidget) {
+            return convertStack(stackWidget, stateBindings, currentForm);
+        }
+
+        // Flow wrapper → FlowElement (container)
+        if (widget instanceof FlowTagHandler.FlowWidget flowWidget) {
+            return convertFlow(flowWidget, stateBindings, currentForm);
         }
 
         // Low-level Widget (Paragraph, etc.) → wrap with GenericWidgetElement
@@ -558,6 +628,570 @@ public class WidgetToElementConverter {
         return Toolkit.text("<select>");
     }
 
+    // ========== New widget conversion methods ==========
+
+    /**
+     * Converts a tabs widget to a {@link TabsElement}, connecting it to the
+     * appropriate {@link TabsState} from state bindings.
+     */
+    private Element convertTabs(TabsTagHandler.TabsWidget tabsWidget,
+                                Map<String, Object> stateBindings) {
+        TabsElement tabs = new TabsElement();
+
+        // Parse comma-separated titles
+        String titlesStr = tabsWidget.titles();
+        if (titlesStr != null && !titlesStr.isBlank()) {
+            String[] titleArr = titlesStr.split(",");
+            for (int i = 0; i < titleArr.length; i++) {
+                titleArr[i] = titleArr[i].trim();
+            }
+            tabs.titles(titleArr);
+        }
+
+        // State binding
+        String bind = tabsWidget.bind();
+        if (bind != null) {
+            Object state = stateBindings.get(bind);
+            if (state instanceof TabsState ts) {
+                tabs.state(ts);
+            } else if (state != null) {
+                log.warn("State binding '{}' is not a TabsState but {}", bind, state.getClass().getSimpleName());
+            }
+        }
+
+        // Divider
+        String divider = tabsWidget.divider();
+        if (divider != null) {
+            tabs.divider(divider);
+        }
+
+        // Highlight color
+        Color highlightColor = parseColor(tabsWidget.highlightColor());
+        if (highlightColor != null) {
+            tabs.highlightColor(highlightColor);
+        }
+
+        // Padding
+        String paddingLeft = tabsWidget.paddingLeft();
+        String paddingRight = tabsWidget.paddingRight();
+        if (paddingLeft != null || paddingRight != null) {
+            tabs.padding(
+                    paddingLeft != null ? paddingLeft : "",
+                    paddingRight != null ? paddingRight : ""
+            );
+        }
+
+        // Title
+        String title = tabsWidget.title();
+        if (title != null && !title.isBlank()) {
+            tabs.title(title);
+        }
+
+        // Border type
+        applyBorderType(tabsWidget.borderType(), type -> {
+            if (type == BorderType.ROUNDED) tabs.rounded();
+        });
+
+        // Border color
+        Color borderColor = parseColor(tabsWidget.borderColor());
+        if (borderColor != null) {
+            tabs.borderColor(borderColor);
+        }
+
+        return tabs;
+    }
+
+    /**
+     * Converts a text area widget to a {@link TextAreaElement}, connecting it to
+     * the appropriate {@link TextAreaState} from state bindings.
+     */
+    private Element convertTextArea(TextAreaTagHandler.TextAreaWidget textAreaWidget,
+                                    Map<String, Object> stateBindings) {
+        TextAreaElement textArea = new TextAreaElement();
+
+        // State binding
+        String bind = textAreaWidget.bind();
+        if (bind != null) {
+            Object state = stateBindings.get(bind);
+            if (state instanceof TextAreaState tas) {
+                textArea.state(tas);
+            } else if (state != null) {
+                log.warn("State binding '{}' is not a TextAreaState but {}", bind, state.getClass().getSimpleName());
+            }
+        }
+
+        // Placeholder
+        String placeholder = textAreaWidget.placeholder();
+        if (placeholder != null) {
+            textArea.placeholder(placeholder);
+        }
+
+        // Title
+        String title = textAreaWidget.title();
+        if (title != null && !title.isBlank()) {
+            textArea.title(title);
+        }
+
+        // Border type
+        applyBorderType(textAreaWidget.borderType(), type -> {
+            if (type == BorderType.ROUNDED) textArea.rounded();
+        });
+
+        // Border color
+        Color borderColor = parseColor(textAreaWidget.borderColor());
+        if (borderColor != null) {
+            textArea.borderColor(borderColor);
+        }
+
+        // Focused border color
+        Color focusedBorderColor = parseColor(textAreaWidget.focusedBorderColor());
+        if (focusedBorderColor != null) {
+            textArea.focusedBorderColor(focusedBorderColor);
+        }
+
+        // Show line numbers
+        if (textAreaWidget.showLineNumbers()) {
+            textArea.showLineNumbers();
+        }
+
+        // Stable ID for focus tracking
+        if (bind != null) {
+            textArea.id("textarea-" + bind);
+        }
+
+        return textArea;
+    }
+
+    /**
+     * Converts a dialog widget to a {@link DialogElement}, recursively
+     * converting child widgets.
+     */
+    private Element convertDialog(DialogTagHandler.DialogWidget dialogWidget,
+                                  Map<String, Object> stateBindings, FormState currentForm) {
+        DialogElement dialog = new DialogElement();
+
+        // Title
+        String title = dialogWidget.title();
+        if (title != null && !title.isBlank()) {
+            dialog.title(title);
+        }
+
+        // Border type
+        BorderType borderType = parseBorderType(dialogWidget.borderType());
+        if (borderType != null) {
+            dialog.borderType(borderType);
+        }
+
+        // Border color
+        Color borderColor = parseColor(dialogWidget.borderColor());
+        if (borderColor != null) {
+            dialog.borderColor(borderColor);
+        }
+
+        // Width
+        String width = dialogWidget.width();
+        if (width != null) {
+            try { dialog.width(Integer.parseInt(width.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Height
+        String height = dialogWidget.height();
+        if (height != null) {
+            try { dialog.length(Integer.parseInt(height.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Min width
+        String minWidth = dialogWidget.minWidth();
+        if (minWidth != null) {
+            try { dialog.minWidth(Integer.parseInt(minWidth.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Padding
+        String padding = dialogWidget.padding();
+        if (padding != null) {
+            try { dialog.padding(Integer.parseInt(padding.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Direction
+        String direction = dialogWidget.direction();
+        if (direction != null) {
+            try {
+                String normalized = direction.trim().toUpperCase().replace("-", "_");
+                dialog.direction(Direction.valueOf(normalized));
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        // Flex
+        String flex = dialogWidget.flex();
+        if (flex != null) {
+            try { dialog.flex(Flex.valueOf(flex.trim().toUpperCase())); } catch (IllegalArgumentException ignored) {}
+        }
+
+        // Spacing
+        String spacing = dialogWidget.spacing();
+        if (spacing != null) {
+            try { dialog.spacing(Integer.parseInt(spacing.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Recursively convert children
+        for (Object child : dialogWidget.children()) {
+            dialog.add(doConvert(child, stateBindings, currentForm));
+        }
+
+        return dialog;
+    }
+
+    /**
+     * Converts a tree widget to a {@link TreeElement}, connecting it to
+     * tree roots or state from the model.
+     */
+    @SuppressWarnings("unchecked")
+    private Element convertTree(TreeTagHandler.TreeWidget treeWidget,
+                                Map<String, Object> stateBindings) {
+        TreeElement<Object> tree = new TreeElement<>();
+
+        // State/roots binding
+        String bind = treeWidget.bind();
+        if (bind != null) {
+            Object state = stateBindings.get(bind);
+            if (state instanceof TreeNode<?>[]) {
+                for (TreeNode<?> root : (TreeNode<?>[]) state) {
+                    tree.add((TreeNode<Object>) root);
+                }
+            } else if (state instanceof java.util.Collection<?> coll) {
+                for (Object item : coll) {
+                    if (item instanceof TreeNode<?>) {
+                        tree.add((TreeNode<Object>) item);
+                    }
+                }
+            } else if (state instanceof TreeNode<?> singleRoot) {
+                tree.add((TreeNode<Object>) singleRoot);
+            } else if (state != null) {
+                log.warn("State binding '{}' is not TreeNode/Collection but {}", bind, state.getClass().getSimpleName());
+            }
+        }
+
+        // Title
+        String title = treeWidget.title();
+        if (title != null && !title.isBlank()) {
+            tree.title(title);
+        }
+
+        // Border type
+        applyBorderType(treeWidget.borderType(), type -> {
+            if (type == BorderType.ROUNDED) tree.rounded();
+        });
+
+        // Border color
+        Color borderColor = parseColor(treeWidget.borderColor());
+        if (borderColor != null) {
+            tree.borderColor(borderColor);
+        }
+
+        // Guide style
+        String guideStyle = treeWidget.guideStyle();
+        if (guideStyle != null) {
+            try {
+                tree.guideStyle(GuideStyle.valueOf(guideStyle.trim().toUpperCase()));
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        // Highlight color
+        Color highlightColor = parseColor(treeWidget.highlightColor());
+        if (highlightColor != null) {
+            tree.highlightColor(highlightColor);
+        }
+
+        // Highlight symbol
+        String highlightSymbol = treeWidget.highlightSymbol();
+        if (highlightSymbol != null) {
+            tree.highlightSymbol(highlightSymbol);
+        }
+
+        // Scrollbar policy
+        String scrollbarPolicy = treeWidget.scrollbarPolicy();
+        if (scrollbarPolicy != null) {
+            try {
+                String normalized = scrollbarPolicy.trim().toUpperCase().replace("-", "_");
+                tree.scrollbar(ScrollBarPolicy.valueOf(normalized));
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        // Indent width
+        String indentWidth = treeWidget.indentWidth();
+        if (indentWidth != null) {
+            try { tree.indentWidth(Integer.parseInt(indentWidth.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        return tree;
+    }
+
+    /**
+     * Converts a form field widget to a {@link FormFieldElement}, resolving
+     * the field state from the enclosing form or state bindings.
+     */
+    private Element convertFormField(FormFieldTagHandler.FormFieldWidget formFieldWidget,
+                                     Map<String, Object> stateBindings, FormState currentForm) {
+        String label = formFieldWidget.label();
+        String field = formFieldWidget.field();
+        String bind = formFieldWidget.bind();
+        String type = formFieldWidget.type();
+
+        // Determine field type
+        FieldType fieldType = FieldType.TEXT;
+        if (type != null) {
+            try {
+                fieldType = FieldType.valueOf(type.trim().toUpperCase());
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        FormFieldElement formField;
+
+        // Resolve state from form context or standalone binding
+        if (field != null && currentForm != null) {
+            // Form field mode
+            switch (fieldType) {
+                case CHECKBOX, TOGGLE -> {
+                    try {
+                        BooleanFieldState boolState = currentForm.booleanField(field);
+                        formField = new FormFieldElement(label != null ? label : "", boolState, fieldType);
+                    } catch (Exception e) {
+                        log.warn("No boolean field '{}' in FormState", field);
+                        formField = new FormFieldElement(label != null ? label : "");
+                    }
+                }
+                case SELECT -> {
+                    try {
+                        SelectFieldState selectState = currentForm.selectField(field);
+                        formField = new FormFieldElement(label != null ? label : "", selectState);
+                    } catch (Exception e) {
+                        log.warn("No select field '{}' in FormState", field);
+                        formField = new FormFieldElement(label != null ? label : "");
+                    }
+                }
+                default -> {
+                    try {
+                        TextInputState textState = currentForm.textField(field);
+                        formField = new FormFieldElement(label != null ? label : "", textState);
+                    } catch (Exception e) {
+                        log.warn("No text field '{}' in FormState", field);
+                        formField = new FormFieldElement(label != null ? label : "");
+                    }
+                }
+            }
+        } else if (bind != null) {
+            // Standalone mode
+            Object state = stateBindings.get(bind);
+            if (state instanceof TextInputState tis) {
+                formField = new FormFieldElement(label != null ? label : "", tis);
+            } else if (state instanceof BooleanFieldState bfs) {
+                formField = new FormFieldElement(label != null ? label : "", bfs, fieldType);
+            } else if (state instanceof SelectFieldState sfs) {
+                formField = new FormFieldElement(label != null ? label : "", sfs);
+            } else if (state instanceof SelectState ss) {
+                formField = new FormFieldElement(label != null ? label : "", ss);
+            } else {
+                if (state != null) {
+                    log.warn("State binding '{}' is not a recognized form field state but {}",
+                             bind, state.getClass().getSimpleName());
+                }
+                formField = new FormFieldElement(label != null ? label : "");
+            }
+        } else {
+            formField = new FormFieldElement(label != null ? label : "");
+        }
+
+        // Label width
+        String labelWidth = formFieldWidget.labelWidth();
+        if (labelWidth != null) {
+            try { formField.labelWidth(Integer.parseInt(labelWidth.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Placeholder
+        String placeholder = formFieldWidget.placeholder();
+        if (placeholder != null) {
+            formField.placeholder(placeholder);
+        }
+
+        // Border type
+        applyBorderType(formFieldWidget.borderType(), t -> {
+            if (t == BorderType.ROUNDED) formField.rounded();
+        });
+
+        // Border color
+        Color borderColor = parseColor(formFieldWidget.borderColor());
+        if (borderColor != null) {
+            formField.borderColor(borderColor);
+        }
+
+        // Focused border color
+        Color focusedBorderColor = parseColor(formFieldWidget.focusedBorderColor());
+        if (focusedBorderColor != null) {
+            formField.focusedBorderColor(focusedBorderColor);
+        }
+
+        // Stable ID for focus tracking
+        if (field != null) {
+            formField.id("formfield-" + field);
+        } else if (bind != null) {
+            formField.id("formfield-" + bind);
+        }
+
+        return formField;
+    }
+
+    /**
+     * Converts a columns widget to a {@link ColumnsElement}, recursively
+     * converting child widgets.
+     */
+    private Element convertColumns(ColumnsTagHandler.ColumnsWidget columnsWidget,
+                                   Map<String, Object> stateBindings, FormState currentForm) {
+        ColumnsElement columns = new ColumnsElement();
+
+        // Spacing
+        String spacing = columnsWidget.spacing();
+        if (spacing != null) {
+            try { columns.spacing(Integer.parseInt(spacing.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Flex
+        String flex = columnsWidget.flex();
+        if (flex != null) {
+            try { columns.flex(Flex.valueOf(flex.trim().toUpperCase())); } catch (IllegalArgumentException ignored) {}
+        }
+
+        // Margin
+        String margin = columnsWidget.margin();
+        if (margin != null) {
+            try { columns.margin(Integer.parseInt(margin.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Column count
+        String columnCount = columnsWidget.columnCount();
+        if (columnCount != null) {
+            try { columns.columnCount(Integer.parseInt(columnCount.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Column order
+        String columnOrder = columnsWidget.columnOrder();
+        if (columnOrder != null) {
+            try {
+                String normalized = columnOrder.trim().toUpperCase().replace("-", "_");
+                columns.order(ColumnOrder.valueOf(normalized));
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        // CSS class
+        String cssClass = columnsWidget.cssClass();
+        if (cssClass != null && !cssClass.isBlank()) {
+            columns.addClass(cssClass.trim().split("\\s+"));
+        }
+
+        // ID
+        String id = columnsWidget.id();
+        if (id != null && !id.isBlank()) {
+            columns.id(id.trim());
+        }
+
+        // Recursively convert children
+        for (Object child : columnsWidget.children()) {
+            columns.add(doConvert(child, stateBindings, currentForm));
+        }
+
+        return columns;
+    }
+
+    /**
+     * Converts a stack widget to a {@link StackElement}, recursively
+     * converting child widgets.
+     */
+    private Element convertStack(StackTagHandler.StackWidget stackWidget,
+                                 Map<String, Object> stateBindings, FormState currentForm) {
+        StackElement stack = new StackElement();
+
+        // Alignment
+        String alignment = stackWidget.alignment();
+        if (alignment != null) {
+            try {
+                String normalized = alignment.trim().toUpperCase().replace("-", "_");
+                stack.alignment(ContentAlignment.valueOf(normalized));
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        // Margin
+        String margin = stackWidget.margin();
+        if (margin != null) {
+            try { stack.margin(Integer.parseInt(margin.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // CSS class
+        String cssClass = stackWidget.cssClass();
+        if (cssClass != null && !cssClass.isBlank()) {
+            stack.addClass(cssClass.trim().split("\\s+"));
+        }
+
+        // ID
+        String id = stackWidget.id();
+        if (id != null && !id.isBlank()) {
+            stack.id(id.trim());
+        }
+
+        // Recursively convert children
+        for (Object child : stackWidget.children()) {
+            stack.add(doConvert(child, stateBindings, currentForm));
+        }
+
+        return stack;
+    }
+
+    /**
+     * Converts a flow widget to a {@link FlowElement}, recursively
+     * converting child widgets.
+     */
+    private Element convertFlow(FlowTagHandler.FlowWidget flowWidget,
+                                Map<String, Object> stateBindings, FormState currentForm) {
+        FlowElement flow = new FlowElement();
+
+        // Spacing
+        String spacing = flowWidget.spacing();
+        if (spacing != null) {
+            try { flow.spacing(Integer.parseInt(spacing.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Row spacing
+        String rowSpacing = flowWidget.rowSpacing();
+        if (rowSpacing != null) {
+            try { flow.rowSpacing(Integer.parseInt(rowSpacing.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Margin
+        String margin = flowWidget.margin();
+        if (margin != null) {
+            try { flow.margin(Integer.parseInt(margin.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // CSS class
+        String cssClass = flowWidget.cssClass();
+        if (cssClass != null && !cssClass.isBlank()) {
+            flow.addClass(cssClass.trim().split("\\s+"));
+        }
+
+        // ID
+        String id = flowWidget.id();
+        if (id != null && !id.isBlank()) {
+            flow.id(id.trim());
+        }
+
+        // Recursively convert children
+        for (Object child : flowWidget.children()) {
+            flow.add(doConvert(child, stateBindings, currentForm));
+        }
+
+        return flow;
+    }
+
+    // ========== Helper methods ==========
+
     /**
      * Parses a string constraint value (e.g. "3", "20") to a length constraint.
      *
@@ -572,6 +1206,66 @@ public class WidgetToElementConverter {
             return Constraint.length(Integer.parseInt(value.trim()));
         } catch (NumberFormatException e) {
             return null;
+        }
+    }
+
+    /**
+     * Parses a named color string (e.g. "RED", "cyan", "LIGHT_BLUE") to a TamboUI {@link Color}.
+     * Returns {@code null} if the string is null, blank, or not recognized.
+     */
+    private Color parseColor(String colorStr) {
+        if (colorStr == null || colorStr.isBlank()) {
+            return null;
+        }
+        String normalized = colorStr.trim().toUpperCase().replace("-", "_");
+        switch (normalized) {
+            case "BLACK":         return Color.BLACK;
+            case "RED":           return Color.RED;
+            case "GREEN":         return Color.GREEN;
+            case "YELLOW":        return Color.YELLOW;
+            case "BLUE":          return Color.BLUE;
+            case "MAGENTA":       return Color.MAGENTA;
+            case "CYAN":          return Color.CYAN;
+            case "WHITE":         return Color.WHITE;
+            case "GRAY":          return Color.GRAY;
+            case "DARK_GRAY":     return Color.DARK_GRAY;
+            case "LIGHT_RED":     return Color.LIGHT_RED;
+            case "LIGHT_GREEN":   return Color.LIGHT_GREEN;
+            case "LIGHT_YELLOW":  return Color.LIGHT_YELLOW;
+            case "LIGHT_BLUE":    return Color.LIGHT_BLUE;
+            case "LIGHT_MAGENTA": return Color.LIGHT_MAGENTA;
+            case "LIGHT_CYAN":    return Color.LIGHT_CYAN;
+            case "BRIGHT_WHITE":  return Color.BRIGHT_WHITE;
+            default:
+                log.debug("Unknown color '{}', ignoring", colorStr);
+                return null;
+        }
+    }
+
+    /**
+     * Parses a border type string (e.g. "rounded", "PLAIN", "double") to a {@link BorderType}.
+     * Returns {@code null} if the string is null, blank, or not recognized.
+     */
+    private BorderType parseBorderType(String borderTypeStr) {
+        if (borderTypeStr == null || borderTypeStr.isBlank()) {
+            return null;
+        }
+        try {
+            return BorderType.valueOf(borderTypeStr.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            log.debug("Unknown border type '{}', ignoring", borderTypeStr);
+            return null;
+        }
+    }
+
+    /**
+     * Applies a parsed border type using the given consumer. This is a convenience
+     * method for elements that only support {@code rounded()} instead of {@code borderType()}.
+     */
+    private void applyBorderType(String borderTypeStr, java.util.function.Consumer<BorderType> applier) {
+        BorderType type = parseBorderType(borderTypeStr);
+        if (type != null) {
+            applier.accept(type);
         }
     }
 }
