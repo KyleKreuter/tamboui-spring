@@ -26,6 +26,7 @@ import io.github.kylekreuter.tamboui.spring.template.tags.ItemTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.ListTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.PanelTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.RowTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.SelectTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.SpacerTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TableTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TextTagHandler;
@@ -220,6 +221,12 @@ public class TamboUiAutoConfiguration {
     @ConditionalOnMissingBean
     public InputTagHandler inputTagHandler() {
         return new InputTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public SelectTagHandler selectTagHandler() {
+        return new SelectTagHandler();
     }
 
     @Bean
