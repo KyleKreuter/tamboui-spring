@@ -1014,9 +1014,13 @@ public class WidgetToElementConverter {
         }
 
         // Border type
-        applyBorderType(formFieldWidget.borderType(), t -> {
-            if (t == BorderType.ROUNDED) formField.rounded();
-        });
+        String btStr = formFieldWidget.borderType();
+        if (btStr != null && !btStr.isBlank()) {
+            try {
+                BorderType bt = BorderType.valueOf(btStr.trim().toUpperCase());
+                if (bt == BorderType.ROUNDED) formField.rounded();
+            } catch (IllegalArgumentException ignored) {}
+        }
 
         // Border color
         Color borderColor = parseColor(formFieldWidget.borderColor());

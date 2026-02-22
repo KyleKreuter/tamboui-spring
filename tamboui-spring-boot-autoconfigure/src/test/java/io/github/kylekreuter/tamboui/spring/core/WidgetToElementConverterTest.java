@@ -1132,10 +1132,9 @@ class WidgetToElementConverterTest {
         void treeWithBoundRootsShouldConvert() {
             var handler = new TreeTagHandler();
             var widget = handler.createElement(Map.of("bind", "fileTree"));
-            List<TreeNode<String>> roots = List.of(
-                    TreeNode.of("src"),
-                    TreeNode.of("README.md").leaf()
-            );
+            var srcNode = TreeNode.of("src");
+            var readmeNode = TreeNode.of("README.md").leaf();
+            var roots = List.of(srcNode, readmeNode);
 
             Element result = converter.convert(widget, Map.of("fileTree", roots));
 
