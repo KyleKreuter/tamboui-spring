@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -22,6 +24,12 @@ jobs:
           server-id: central
           server-username: SONATYPE_USERNAME
           server-password: SONATYPE_TOKEN
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build TamboUI submodule
+        run: cd libs/tamboui && ./gradlew publishToMavenLocal --no-daemon -x test
 
       - name: Deploy SNAPSHOT
         run: ./mvnw --no-transfer-progress --batch-mode clean deploy -Psnapshot -Dgpg.signer=bc -pl '!tamboui-spring-demo'
