@@ -11,11 +11,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class TamboUiProperties {
 
     /**
-     * Terminal backend to use. Default: jline3.
-     */
-    private String backend = "jline3";
-
-    /**
      * Template file location prefix. Default: templates/.
      */
     private String templatePrefix = "templates/";
@@ -35,14 +30,6 @@ public class TamboUiProperties {
      * If not set, the first discovered {@code @TamboScreen} bean is used.
      */
     private String defaultScreen;
-
-    public String getBackend() {
-        return backend;
-    }
-
-    public void setBackend(String backend) {
-        this.backend = backend;
-    }
 
     public String getTemplatePrefix() {
         return templatePrefix;
