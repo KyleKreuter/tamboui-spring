@@ -86,6 +86,12 @@ public class WidgetToElementConverter {
 
     private static final Logger log = LoggerFactory.getLogger(WidgetToElementConverter.class);
 
+    // Cache for stateful elements that must survive across render frames.
+    // TreeElement holds an internal TreeState (selection, scroll) that is lost
+    // when a new instance is created. By caching the element, we preserve
+    // keyboard navigation state across frames.
+    private final Map<String, Element> elementCache = new java.util.HashMap<>();
+
     /**
      * Converts a template engine output object to a toolkit Element without state bindings.
      * <p>
@@ -848,10 +854,22 @@ public class WidgetToElementConverter {
     @SuppressWarnings("unchecked")
     private Element convertTree(TreeTagHandler.TreeWidget treeWidget,
                                 Map<String, Object> stateBindings) {
+        String bind = treeWidget.bind();
+
+        // Return cached instance to preserve internal TreeState (selection, scroll)
+        // across render frames. TreeElement holds a private final TreeState that
+        // would be lost if a new instance were created each frame.
+        if (bind != null) {
+            String cacheKey = "tree-" + bind;
+            Element cached = elementCache.get(cacheKey);
+            if (cached != null) {
+                return cached;
+            }
+        }
+
         TreeElement<Object> tree = new TreeElement<>();
 
         // State/roots binding
-        String bind = treeWidget.bind();
         if (bind != null) {
             Object state = stateBindings.get(bind);
             if (state instanceof TreeNode<?>[]) {
@@ -921,6 +939,14 @@ public class WidgetToElementConverter {
         String indentWidth = treeWidget.indentWidth();
         if (indentWidth != null) {
             try { tree.indentWidth(Integer.parseInt(indentWidth.trim())); } catch (NumberFormatException ignored) {}
+        }
+
+        // Make tree focusable so it participates in TAB navigation
+        // and can receive keyboard events (up/down/left/right/enter)
+        tree.focusable();
+        if (bind != null) {
+            tree.id("tree-" + bind);
+            elementCache.put("tree-" + bind, tree);
         }
 
         return tree;

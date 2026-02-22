@@ -31,6 +31,14 @@ import io.github.kylekreuter.tamboui.spring.template.tags.SelectTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.SpacerTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TableTagHandler;
 import io.github.kylekreuter.tamboui.spring.template.tags.TextTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.ColumnsTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.DialogTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.FlowTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.FormFieldTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.StackTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.TabsTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.TextAreaTagHandler;
+import io.github.kylekreuter.tamboui.spring.template.tags.TreeTagHandler;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -121,6 +129,54 @@ public class TamboUiAutoConfiguration {
     @ConditionalOnMissingBean
     public SpacerTagHandler spacerTagHandler() {
         return new SpacerTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public TabsTagHandler tabsTagHandler() {
+        return new TabsTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public TextAreaTagHandler textAreaTagHandler() {
+        return new TextAreaTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public DialogTagHandler dialogTagHandler() {
+        return new DialogTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public TreeTagHandler treeTagHandler() {
+        return new TreeTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public FormFieldTagHandler formFieldTagHandler() {
+        return new FormFieldTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ColumnsTagHandler columnsTagHandler() {
+        return new ColumnsTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public StackTagHandler stackTagHandler() {
+        return new StackTagHandler();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public FlowTagHandler flowTagHandler() {
+        return new FlowTagHandler();
     }
 
     @Bean

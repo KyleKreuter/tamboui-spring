@@ -1,11 +1,10 @@
 <t:dock xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
         top-height="3" bottom-height="3">
 
-  <!-- Top: Title bar with Tabs navigation -->
-  <t:panel region="top" title="${title}" class="border-rounded text-cyan">
-    <t:tabs bind="navigationTabs" titles="Overview,Editor,Tree,Layout"
-            highlight-color="cyan" border-type="rounded" border-color="cyan" />
-  </t:panel>
+  <!-- Top: Tabs navigation (standalone, no extra Panel wrapper) -->
+  <t:tabs region="top" bind="navigationTabs" titles="Overview,Editor,Tree,Layout"
+          title="${title}" highlight-color="cyan"
+          border-type="rounded" border-color="cyan" />
 
   <!-- Center: Main content area with widget showcases -->
   <t:grid region="center" grid-columns="2" grid-rows="3" gutter="1">
@@ -21,7 +20,7 @@
     <!-- Tree widget -->
     <t:panel title="Tree" class="border-rounded">
       <t:tree bind="projectTree" title="Project Files"
-              border-type="rounded" border-color="green"
+              border-type="rounded"
               guide-style="unicode" highlight-color="yellow"
               highlight-symbol=">> " indent-width="3" />
     </t:panel>

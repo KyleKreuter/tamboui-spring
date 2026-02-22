@@ -5,7 +5,6 @@ import dev.tamboui.widgets.input.TextAreaState;
 import dev.tamboui.widgets.input.TextInputState;
 import dev.tamboui.widgets.tabs.TabsState;
 import dev.tamboui.widgets.tree.TreeNode;
-
 import io.github.kylekreuter.tamboui.spring.annotation.BindState;
 import io.github.kylekreuter.tamboui.spring.annotation.OnKey;
 import io.github.kylekreuter.tamboui.spring.annotation.TamboScreen;
@@ -33,15 +32,30 @@ public class WidgetShowcaseController implements ScreenController {
 
     @BindState("editorState")
     private final TextAreaState editorState = new TextAreaState(
-            "// Welcome to the TamboUI Widget Showcase\n"
-          + "// This text area demonstrates the TextArea widget.\n"
-          + "// Try editing this content!\n");
+        "// Welcome to the TamboUI Widget Showcase\n"
+            + "// This text area demonstrates the TextArea widget.\n"
+            + "// Try editing this content!\n");
 
     @BindState("searchInput")
     private final TextInputState searchInput = new TextInputState();
 
     @BindState("darkModeToggle")
     private final BooleanFieldState darkModeToggle = new BooleanFieldState(true);
+
+    @BindState("projectTree")
+    private final List<TreeNode<String>> projectTree = List.of(
+        TreeNode.<String>of("src")
+            .add(TreeNode.<String>of("main")
+                .add(TreeNode.<String>of("java").leaf())
+                .add(TreeNode.<String>of("resources").leaf()))
+            .add(TreeNode.<String>of("test")
+                .add(TreeNode.<String>of("java").leaf())),
+        TreeNode.<String>of("docs")
+            .add(TreeNode.<String>of("architecture.md").leaf())
+            .add(TreeNode.<String>of("template-engine.md").leaf()),
+        TreeNode.<String>of("README.md").leaf(),
+        TreeNode.<String>of("build.gradle").leaf()
+    );
 
     public WidgetShowcaseController(TamboSpringApp tamboSpringApp) {
         this.tamboSpringApp = tamboSpringApp;
@@ -50,33 +64,27 @@ public class WidgetShowcaseController implements ScreenController {
     @Override
     public void populate(TemplateModel model) {
         model.put("title", "Widget Showcase")
-             .put("subtitle", "All 8 new widget types")
-             .put("footerHint", "Ctrl+Q Quit");
-
-        // Tree data for the tree widget
-        List<TreeNode<String>> projectTree = List.of(
-                TreeNode.<String>of("src")
-                        .add(TreeNode.<String>of("main")
-                                .add(TreeNode.<String>of("java").leaf())
-                                .add(TreeNode.<String>of("resources").leaf()))
-                        .add(TreeNode.<String>of("test")
-                                .add(TreeNode.<String>of("java").leaf())),
-                TreeNode.<String>of("docs")
-                        .add(TreeNode.<String>of("architecture.md").leaf())
-                        .add(TreeNode.<String>of("template-engine.md").leaf()),
-                TreeNode.<String>of("README.md").leaf(),
-                TreeNode.<String>of("build.gradle").leaf()
-        );
-        model.bindState("projectTree", projectTree);
+            .put("subtitle", "All 8 new widget types")
+            .put("footerHint", "TAB Focus  Ctrl+P/N Tabs  Ctrl+Q Quit");
 
         // Flow widget labels
         model.put("tag1", "Spring Boot")
-             .put("tag2", "TamboUI")
-             .put("tag3", "Java 17+")
-             .put("tag4", "Terminal UI")
-             .put("tag5", "Annotations")
-             .put("tag6", "Templates")
-             .put("tag7", "Reactive");
+            .put("tag2", "TamboUI")
+            .put("tag3", "Java 17+")
+            .put("tag4", "Terminal UI")
+            .put("tag5", "Annotations")
+            .put("tag6", "Templates")
+            .put("tag7", "Reactive");
+    }
+
+    @OnKey("ctrl+p")
+    void previousTab() {
+        navigationTabs.selectPrevious(4);
+    }
+
+    @OnKey("ctrl+n")
+    void nextTab() {
+        navigationTabs.selectNext(4);
     }
 
     @OnKey("ctrl+q")
