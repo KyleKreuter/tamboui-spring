@@ -647,11 +647,7 @@ public class WidgetToElementConverter {
         String bind = selectWidget.bind();
         if (bind != null) {
             Object state = stateBindings.get(bind);
-            if (state instanceof SelectState ss) {
-                var element = Toolkit.formField("", ss);
-                element.id("select-" + bind);
-                return element;
-            } else if (state instanceof SelectFieldState sfs) {
+            if (state instanceof SelectFieldState sfs) {
                 var element = Toolkit.formField("", sfs);
                 element.id("select-" + bind);
                 return element;
@@ -1064,7 +1060,9 @@ public class WidgetToElementConverter {
             } else if (state instanceof SelectFieldState sfs) {
                 formField = new FormFieldElement(label != null ? label : "", sfs);
             } else if (state instanceof SelectState ss) {
-                formField = new FormFieldElement(label != null ? label : "", ss);
+                // Convert SelectState to SelectFieldState for FormFieldElement compatibility
+                SelectFieldState sfs = new SelectFieldState(ss.options(), ss.selectedIndex());
+                formField = new FormFieldElement(label != null ? label : "", sfs);
             } else {
                 if (state != null) {
                     log.warn("State binding '{}' is not a recognized form field state but {}",
