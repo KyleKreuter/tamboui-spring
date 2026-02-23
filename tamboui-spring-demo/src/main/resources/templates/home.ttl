@@ -1,0 +1,30 @@
+<t:dock xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+        top-height="3" bottom-height="3">
+
+  <!-- Top: Tabs navigation -->
+  <t:tabs region="top" bind="navigationTabs" titles="Home,Editor,Forms,Data"
+          title="Widget Showcase" highlight-color="cyan"
+          border-type="rounded" border-color="cyan" />
+
+  <!-- Center: Welcome and keyboard shortcuts -->
+  <t:panel region="center" title="Welcome to TamboUI Spring" class="border-rounded">
+    <t:column spacing="1">
+      <t:text t:text="TamboUI Spring — Terminal UIs with Spring Boot" class="bold" />
+      <t:text t:text="Build rich terminal user interfaces using annotations, dependency injection, and convention over configuration." />
+      <t:text t:text="" />
+      <t:text t:text="Keyboard Shortcuts" class="bold" />
+      <t:text t:text="  Ctrl+P / Ctrl+N   Switch tabs" />
+      <t:text t:text="  TAB               Cycle focus between widgets" />
+      <t:text t:text="  d                 Open dialog screen" />
+      <t:text t:text="  Ctrl+Q            Quit application" />
+      <t:text t:text="" />
+      <t:text t:text="Use the tabs above to explore different widget categories." class="text-cyan" />
+    </t:column>
+  </t:panel>
+
+  <!-- Bottom: Footer -->
+  <t:panel region="bottom" class="border-rounded">
+    <t:text t:text="${footerHint}" class="text-cyan" />
+  </t:panel>
+
+</t:dock>

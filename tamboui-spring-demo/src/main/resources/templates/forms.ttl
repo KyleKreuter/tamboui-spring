@@ -1,0 +1,28 @@
+<t:dock xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+        top-height="3" bottom-height="3">
+
+  <!-- Top: Tabs navigation -->
+  <t:tabs region="top" bind="navigationTabs" titles="Home,Editor,Forms,Data"
+          title="Widget Showcase" highlight-color="cyan"
+          border-type="rounded" border-color="cyan" />
+
+  <!-- Center: Form widgets -->
+  <t:panel region="center" title="Form Widgets" class="border-rounded">
+    <t:column spacing="1">
+      <t:form-field label="Search" bind="searchInput"
+                    placeholder="Type to search..."
+                    border-type="rounded" border-color="dark-gray"
+                    focused-border-color="cyan" label-width="12" />
+      <t:form-field label="Dark Mode" bind="darkModeToggle"
+                    type="toggle"
+                    border-type="rounded" border-color="dark-gray" />
+      <t:select bind="themeSelect" />
+    </t:column>
+  </t:panel>
+
+  <!-- Bottom: Footer -->
+  <t:panel region="bottom" class="border-rounded">
+    <t:text t:text="${footerHint}" class="text-cyan" />
+  </t:panel>
+
+</t:dock>

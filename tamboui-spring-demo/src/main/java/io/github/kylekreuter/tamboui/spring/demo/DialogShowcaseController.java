@@ -14,11 +14,14 @@ import io.github.kylekreuter.tamboui.spring.core.TemplateModel;
 public class DialogShowcaseController implements ScreenController {
 
     private final NavigationRouter navigationRouter;
+    private final TabNavigationState tabNavigationState;
 
     private String dialogStatus = "Pending...";
 
-    public DialogShowcaseController(NavigationRouter navigationRouter) {
+    public DialogShowcaseController(NavigationRouter navigationRouter,
+                                     TabNavigationState tabNavigationState) {
         this.navigationRouter = navigationRouter;
+        this.tabNavigationState = tabNavigationState;
     }
 
     @Override
@@ -29,18 +32,18 @@ public class DialogShowcaseController implements ScreenController {
     @OnKey("y")
     void confirm() {
         dialogStatus = "Confirmed!";
-        navigationRouter.navigateTo("showcase");
+        navigationRouter.navigateTo(tabNavigationState.getActiveTabScreen());
     }
 
     @OnKey("n")
     void cancel() {
         dialogStatus = "Cancelled.";
-        navigationRouter.navigateTo("showcase");
+        navigationRouter.navigateTo(tabNavigationState.getActiveTabScreen());
     }
 
     @OnKey("Escape")
     void back() {
         dialogStatus = "Pending...";
-        navigationRouter.navigateTo("showcase");
+        navigationRouter.navigateTo(tabNavigationState.getActiveTabScreen());
     }
 }

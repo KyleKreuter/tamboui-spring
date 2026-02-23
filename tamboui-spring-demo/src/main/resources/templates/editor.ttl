@@ -1,0 +1,22 @@
+<t:dock xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+        top-height="3" bottom-height="3">
+
+  <!-- Top: Tabs navigation -->
+  <t:tabs region="top" bind="navigationTabs" titles="Home,Editor,Forms,Data"
+          title="Widget Showcase" highlight-color="cyan"
+          border-type="rounded" border-color="cyan" />
+
+  <!-- Center: Code editor -->
+  <t:panel region="center" title="Code Editor" class="border-rounded">
+    <t:textarea bind="editorState" title="Code Editor"
+                border-type="rounded"
+                focused-border-color="cyan" show-line-numbers="true"
+                placeholder="Start typing..." />
+  </t:panel>
+
+  <!-- Bottom: Footer -->
+  <t:panel region="bottom" class="border-rounded">
+    <t:text t:text="${footerHint}" class="text-cyan" />
+  </t:panel>
+
+</t:dock>

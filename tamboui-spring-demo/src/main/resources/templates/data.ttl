@@ -1,0 +1,34 @@
+<t:dock xmlns:t="https://github.com/KyleKreuter/tamboui-spring/template"
+        top-height="3" bottom-height="3">
+
+  <!-- Top: Tabs navigation -->
+  <t:tabs region="top" bind="navigationTabs" titles="Home,Editor,Forms,Data"
+          title="Widget Showcase" highlight-color="cyan"
+          border-type="rounded" border-color="cyan" />
+
+  <!-- Center: Data widgets -->
+  <t:grid region="center" grid-columns="2" grid-rows="1" gutter="1">
+    <t:panel title="Table" class="border-rounded">
+      <t:table highlight-color="cyan">
+        <t:col header="Name" width="20" />
+        <t:col header="Role" width="15" />
+        <t:col header="Status" width="10" />
+      </t:table>
+    </t:panel>
+    <t:panel title="List" class="border-rounded">
+      <t:list highlight-symbol="→ ">
+        <t:item t:text="Tabbed Navigation" />
+        <t:item t:text="Conditional Rendering" />
+        <t:item t:text="State Binding" />
+        <t:item t:text="Template Engine" />
+        <t:item t:text="Auto-Configuration" />
+      </t:list>
+    </t:panel>
+  </t:grid>
+
+  <!-- Bottom: Footer -->
+  <t:panel region="bottom" class="border-rounded">
+    <t:text t:text="${footerHint}" class="text-cyan" />
+  </t:panel>
+
+</t:dock>
