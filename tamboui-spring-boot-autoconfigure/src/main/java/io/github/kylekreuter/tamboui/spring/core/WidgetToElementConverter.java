@@ -436,16 +436,48 @@ public class WidgetToElementConverter {
     }
 
     private Element convertList(ListTagHandler.ListWidgetHolder listHolder) {
+        // Determine a stable cache key so the element (and its internal ListState)
+        // survives across render frames, preserving selection and scroll position.
+        // The id attribute provides a stable key; without it, we derive one from item content.
+        String id = listHolder.id();
+        String cacheKey;
+        if (id != null) {
+            cacheKey = "list-" + id;
+        } else {
+            // Derive stable key from item content so it doesn't change across frames
+            StringBuilder sb = new StringBuilder("list-items-");
+            for (ListItem item : listHolder.items()) {
+                sb.append(item.content().rawContent()).append('\0');
+            }
+            cacheKey = sb.toString();
+            log.debug("List has no id attribute; using content-derived cache key");
+        }
+
+        Element cached = elementCache.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+
         List<String> itemStrings = new ArrayList<>();
         for (ListItem item : listHolder.items()) {
             itemStrings.add(item.content().rawContent());
         }
         var listElement = Toolkit.list(itemStrings);
+        listElement.id(cacheKey);
         listElement.focusable();
+        listElement.rounded();
+        listElement.focusedBorderColor(Color.CYAN);
+
+        String highlightSymbol = listHolder.highlightSymbol();
+        if (highlightSymbol != null) {
+            listElement.highlightSymbol(highlightSymbol);
+        }
         String cssClass = listHolder.cssClass();
         if (cssClass != null && !cssClass.isBlank()) {
             listElement.addClass(cssClass.trim().split("\\s+"));
         }
+
+        elementCache.put(cacheKey, listElement);
         return listElement;
     }
 
@@ -461,9 +493,26 @@ public class WidgetToElementConverter {
             table.header(headers.toArray(new String[0]));
         }
 
+        // Add column width constraints
+        List<Constraint> widths = new ArrayList<>();
+        for (var col : tableHolder.columns()) {
+            widths.add(col.constraint());
+        }
+        if (!widths.isEmpty()) {
+            table.widths(widths);
+        }
+
+        // Apply highlight color
+        String highlightColor = tableHolder.highlightColor();
+        if (highlightColor != null && !highlightColor.isBlank()) {
+            Color color = TableTagHandler.resolveColor(highlightColor);
+            if (color != null) {
+                table.highlightColor(color);
+            }
+        }
+
         // Add rows — each Row contains Cells
         for (var row : tableHolder.rows()) {
-            // Convert table Row to string array for TableElement
             List<String> cells = new ArrayList<>();
             for (var cell : row.cells()) {
                 cells.add(cell.content().toString());

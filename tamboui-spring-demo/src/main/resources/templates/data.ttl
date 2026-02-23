@@ -15,15 +15,13 @@
         <t:col header="Status" width="10" />
       </t:table>
     </t:panel>
-    <t:panel title="List" class="border-rounded">
-      <t:list highlight-symbol="→ ">
-        <t:item t:text="Tabbed Navigation" />
-        <t:item t:text="Conditional Rendering" />
-        <t:item t:text="State Binding" />
-        <t:item t:text="Template Engine" />
-        <t:item t:text="Auto-Configuration" />
-      </t:list>
-    </t:panel>
+    <t:list id="featureList" highlight-symbol="> ">
+      <t:item t:text="Tabbed Navigation" />
+      <t:item t:text="Conditional Rendering" />
+      <t:item t:text="State Binding" />
+      <t:item t:text="Template Engine" />
+      <t:item t:text="Auto-Configuration" />
+    </t:list>
   </t:grid>
 
   <!-- Bottom: Footer -->

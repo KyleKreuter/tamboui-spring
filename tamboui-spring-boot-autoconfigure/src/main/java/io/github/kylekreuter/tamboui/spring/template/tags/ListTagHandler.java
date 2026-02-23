@@ -47,7 +47,7 @@ public class ListTagHandler implements ParentTagHandler {
             builder.highlightSymbol(highlightSymbol);
         }
 
-        return new ListWidgetHolder(builder, attributes.get("id"), attributes.get("class"));
+        return new ListWidgetHolder(builder, attributes.get("id"), attributes.get("class"), highlightSymbol);
     }
 
     @Override
@@ -76,12 +76,14 @@ public class ListTagHandler implements ParentTagHandler {
         private final ListWidget.Builder builder;
         private final String id;
         private final String cssClass;
+        private final String highlightSymbol;
         private List<ListItem> items = new ArrayList<>();
 
-        ListWidgetHolder(ListWidget.Builder builder, String id, String cssClass) {
+        ListWidgetHolder(ListWidget.Builder builder, String id, String cssClass, String highlightSymbol) {
             this.builder = builder;
             this.id = id;
             this.cssClass = cssClass;
+            this.highlightSymbol = highlightSymbol;
         }
 
         void setItems(List<ListItem> items) {
@@ -104,6 +106,15 @@ public class ListTagHandler implements ParentTagHandler {
          */
         public String cssClass() {
             return cssClass;
+        }
+
+        /**
+         * Returns the highlight symbol, or {@code null} if not set.
+         *
+         * @return the highlight symbol
+         */
+        public String highlightSymbol() {
+            return highlightSymbol;
         }
 
         /**

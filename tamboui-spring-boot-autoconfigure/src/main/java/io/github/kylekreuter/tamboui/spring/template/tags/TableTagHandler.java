@@ -74,7 +74,7 @@ public class TableTagHandler implements ParentTagHandler {
      * @param name the color name or hex code
      * @return the resolved Color, or {@code null} if the name is not recognized
      */
-    static Color resolveColor(String name) {
+    public static Color resolveColor(String name) {
         if (name == null || name.isBlank()) {
             return null;
         }
